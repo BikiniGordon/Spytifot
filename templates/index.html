@@ -1,0 +1,1173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Music Playlist Manager</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            color: #333;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            color: #666;
+            font-size: 1.1em;
+        }
+        
+        .search-section {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+        
+        .search-bar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .search-input {
+            flex: 1;
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        .search-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+        
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #5a6fd8;
+            transform: translateY(-2px);
+        }
+        
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #218838;
+        }
+        
+        .btn-warning {
+            background: #ffc107;
+            color: #212529;
+        }
+        
+        .btn-warning:hover {
+            background: #e0a800;
+        }
+        
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background: #c82333;
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+        
+        .main-content {
+            display: block;
+        }
+        
+        .section {
+            background: #fff;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .section h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+        
+        .search-results, .playlist-songs {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .song-item {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            transition: all 0.3s;
+        }
+        
+        .song-item:hover {
+            background: #e9ecef;
+            transform: translateX(5px);
+        }
+        
+        .song-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .song-details {
+            flex: 1;
+        }
+        
+        .song-title {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        
+        .song-meta {
+            color: #666;
+            font-size: 0.9em;
+        }
+        
+        .source-badge {
+            display: inline-block;
+            background: #17a2b8;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.75em;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+        
+        .source-badge.user-added {
+            background: #28a745;
+        }
+        
+        .source-badge.original {
+            background: #6c757d;
+        }
+        
+        .song-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 14px;
+        }
+        
+        .playlist-controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .recommendations-section {
+            grid-column: 1 / -1;
+            margin-top: 20px;
+        }
+        
+        .message {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+        
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+        
+        .empty-state h3 {
+            margin-bottom: 10px;
+        }
+        
+        @media (max-width: 768px) {
+            .search-bar {
+                flex-direction: column;
+            }
+            
+            .playlist-controls {
+                flex-direction: column;
+            }
+            
+            .song-info {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Music Playlist Manager</h1>
+            <p>Search, create, and optimize your perfect playlist with Camelot wheel analysis</p>
+        </div>
+        
+        <div class="search-section">
+            <div class="search-bar">
+                <input type="text" id="searchInput" class="search-input" placeholder="Search for songs or artists..." />
+                <button onclick="searchSongs()" class="btn btn-primary">Search</button>
+            </div>
+        </div>
+        
+        <!-- Search Results below search bar -->
+        <div class="section" style="margin-bottom: 30px;">
+            <h2>Search Results</h2>
+            <div id="searchResults" class="search-results">
+                <div class="empty-state">
+                    <h3>Start Searching</h3>
+                    <p>Enter a song title or artist name to find music</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Manual Playlist Import -->
+        <div class="section" style="margin-top: 20px; margin-bottom: 20px; padding-top: 20px; border-top: 1px solid #ddd;">
+            <h3 style="margin-bottom: 15px; color: #333;">Import Manual Playlist</h3>
+            <p style="color: #666; margin-bottom: 15px; font-size: 0.9em;">
+                Upload a CSV file with columns: <strong>Artist, Song, BPM, Key_mixed_in, Note</strong><br>
+                Key_mixed_in should be in Camelot format (e.g., 8A, 10B)
+            </p>
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <input type="file" id="csvFile" accept=".csv" style="flex: 1; padding: 8px; border: 2px solid #ddd; border-radius: 8px;" />
+                <button onclick="uploadPlaylist()" class="btn btn-success">Import CSV</button>
+            </div>
+        </div>
+
+        <!-- Load Persistent Playlists -->
+        <div class="section" style="margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid #ddd;">
+            <h3 style="margin-bottom: 15px; color: #333;">Load Saved Playlists</h3>
+            <p style="color: #666; margin-bottom: 15px; font-size: 0.9em;">
+                Load previously saved playlists from your collection
+            </p>
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <button onclick="showPersistentPlaylists()" class="btn btn-primary">View Saved Playlists</button>
+            </div>
+            <div id="persistentPlaylistsList" style="margin-top: 15px; display: none;"></div>
+        </div>
+        
+        <div id="searchMessage"></div>
+        
+        <!-- Playlist Management -->
+        <div class="section" style="margin-bottom: 20px;">
+            <h2>Playlist Manager</h2>
+            <div style="display: flex; gap: 15px; margin-bottom: 15px; flex-wrap: wrap; align-items: center;">
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <label for="playlistSelector" style="font-weight: 600;">Current Playlist:</label>
+                    <select id="playlistSelector" onchange="switchPlaylist()" style="padding: 8px; border-radius: 5px; border: 2px solid #ddd; min-width: 150px;">
+                        <option value="Main Playlist">Main Playlist</option>
+                    </select>
+                </div>
+                <div style="display: flex; gap: 8px;">
+                    <button onclick="showCreatePlaylistModal()" class="btn btn-primary btn-sm">New Playlist</button>
+                    <button onclick="showRenamePlaylistModal()" class="btn btn-secondary btn-sm">Rename</button>
+                    <button onclick="deleteCurrentPlaylist()" class="btn btn-danger btn-sm">Delete</button>
+                    <button onclick="exportCurrentPlaylist()" class="btn btn-success btn-sm">Export</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="main-content">
+            <div class="section">
+                <h2><span id="currentPlaylistName">My Playlist</span> (<span id="playlistCount">0</span> songs)</h2>
+                <div class="playlist-controls">
+                    <button onclick="optimizePlaylist()" class="btn btn-warning">Optimize Flow</button>
+                    <button onclick="getRecommendations()" class="btn btn-success">Get Recommendations</button>
+                    <button onclick="clearPlaylist()" class="btn btn-danger">Clear All</button>
+                </div>
+                <div id="playlist" class="playlist-songs">
+                    <div class="empty-state">
+                        <h3>Empty Playlist</h3>
+                        <p>Add songs from search results to build your playlist</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="section recommendations-section" id="recommendationsSection" style="display: none;">
+            <h2>Recommended Songs</h2>
+            <p style="margin-bottom: 20px; color: #666;">Based on your playlist's average BPM and key</p>
+            <div id="recommendations"></div>
+        </div>
+    </div>
+    
+    <!-- Custom Modal for Input/Confirm Dialogs -->
+    <div id="customModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;">
+        <div style="background: white; padding: 30px; border-radius: 10px; max-width: 400px; width: 90%; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
+            <h3 id="modalTitle" style="margin-bottom: 20px; color: #333;"></h3>
+            <p id="modalMessage" style="margin-bottom: 20px; color: #666;"></p>
+            <input type="text" id="modalInput" style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 5px; margin-bottom: 20px; font-size: 16px; display: none;" />
+            <div style="display: flex; gap: 10px; justify-content: center;">
+                <button id="modalCancel" onclick="closeModal(false)" class="btn btn-secondary">Cancel</button>
+                <button id="modalConfirm" onclick="closeModal(true)" class="btn btn-primary">OK</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let currentPlaylist = [];
+        
+        // replace browser prompt/confirm
+        let modalResolver = null;
+        
+        function customPrompt(title, message, defaultValue = '') {
+            return new Promise((resolve) => {
+                modalResolver = resolve;
+                document.getElementById('modalTitle').textContent = title;
+                document.getElementById('modalMessage').textContent = message;
+                document.getElementById('modalInput').style.display = 'block';
+                document.getElementById('modalInput').value = defaultValue;
+                document.getElementById('customModal').style.display = 'flex';
+                document.getElementById('modalInput').focus();
+                document.getElementById('modalInput').select();
+            });
+        }
+        
+        function customConfirm(title, message) {
+            return new Promise((resolve) => {
+                modalResolver = resolve;
+                document.getElementById('modalTitle').textContent = title;
+                document.getElementById('modalMessage').textContent = message;
+                document.getElementById('modalInput').style.display = 'none';
+                document.getElementById('customModal').style.display = 'flex';
+                document.getElementById('modalConfirm').focus();
+            });
+        }
+
+        function closeModal(confirmed) {
+            const modal = document.getElementById('customModal');
+            const input = document.getElementById('modalInput');
+            
+            modal.style.display = 'none';
+            
+            if (modalResolver) {
+                if (confirmed && input.style.display !== 'none') {
+                    modalResolver(input.value.trim() || null);
+                } else {
+                    modalResolver(confirmed);
+                }
+                modalResolver = null;
+            }
+        }
+        
+        // Handle Enter/Escape
+        document.addEventListener('keydown', function(e) {
+            const modal = document.getElementById('customModal');
+            if (modal.style.display === 'flex') {
+                if (e.key === 'Enter') {
+                    closeModal(true);
+                } else if (e.key === 'Escape') {
+                    closeModal(false);
+                }
+            }
+        });
+        
+        async function uploadPlaylist() {
+            const fileInput = document.getElementById('csvFile');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                showMessage('Please select a CSV file to upload', 'error');
+                return;
+            }
+            
+            if (!file.name.toLowerCase().endsWith('.csv')) {
+                showMessage('Please select a valid CSV file', 'error');
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            try {
+                showMessage('Uploading and processing playlist...', 'success');
+                
+                const response = await fetch('/api/upload-playlist', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    const text = await response.text();
+                    console.error('Non-JSON response:', text);
+                    throw new Error('Server returned invalid response format');
+                }
+                
+                const data = await response.json();
+                
+                if (data.error) {
+                    showMessage(data.error, 'error');
+                    return;
+                }
+                
+                let message = data.message;
+                if (data.invalid_count > 0) {
+                    message += ` (${data.invalid_count} rows had issues)`;
+                }
+                
+                showMessage(message, 'success');
+                
+                fileInput.value = '';
+                
+                await loadAllPlaylists();
+                await loadPlaylist();
+                
+                // Show invalid rows if any
+                if (data.invalid_songs && data.invalid_songs.length > 0) {
+                    console.log('Invalid rows:', data.invalid_songs);
+                    const invalidList = data.invalid_songs.join(', ');
+                    if (data.invalid_count <= 10) {
+                        showMessage(`Issues with rows: ${invalidList}`, 'error');
+                    } else {
+                        showMessage(`${data.invalid_count} rows had issues. First few: ${invalidList}...`, 'error');
+                    }
+                }
+                
+            } catch (error) {
+                showMessage('Error uploading playlist: ' + error.message, 'error');
+            }
+        }
+
+        async function searchSongs() {
+            const query = document.getElementById('searchInput').value.trim();
+            if (!query) {
+                showMessage('Please enter a search term', 'error');
+                return;
+            }
+            
+            showLoading('searchResults');
+            
+            try {
+                const response = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
+                const data = await response.json();
+                
+                if (data.error) {
+                    showMessage(data.error, 'error');
+                    showEmptyState('searchResults', 'Search Error', data.error);
+                    return;
+                }
+                
+                displaySearchResults(data.songs);
+                showMessage(`Found ${data.total} songs for "${data.query}"`, 'success');
+                
+            } catch (error) {
+                showMessage('Error searching songs', 'error');
+                showEmptyState('searchResults', 'Connection Error', 'Failed to search songs');
+            }
+        }
+        
+        function displaySearchResults(songs) {
+            const container = document.getElementById('searchResults');
+            
+            if (songs.length === 0) {
+                showEmptyState('searchResults', 'No Results', 'No songs found. Try a different search term.');
+                return;
+            }
+            
+            container.innerHTML = songs.map(song => `
+                <div class="song-item">
+                    <div class="song-info">
+                        <div class="song-details">
+                            <div class="song-title">
+                                ${song.artist} - ${song.song}
+                                <span class="source-badge ${song.source === 'Added by User' ? 'user-added' : 'original'}">${song.source || 'Original Database'}</span>
+                            </div>
+                            <div class="song-meta">Key: ${song.key} | BPM: ${song.bpm} | ID: ${song.id}</div>
+                        </div>
+                        <div class="song-actions">
+                            <button onclick="addToPlaylist(${song.id})" class="btn btn-success btn-sm">+ Add</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        async function addToPlaylist(songId) {
+            try {
+                const response = await fetch('/api/playlist/add', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ song_id: songId })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showMessage(data.message, 'success');
+                    
+                    await loadPlaylist();
+                    
+                    // Remove the song from search results
+                    const searchResultElement = document.querySelector(`[data-song-id="${songId}"]`);
+                    if (searchResultElement) {
+                        searchResultElement.style.opacity = '0.5';
+                        const addBtn = searchResultElement.querySelector('.btn-success');
+                        if (addBtn) {
+                            addBtn.textContent = 'Added ✓';
+                            addBtn.disabled = true;
+                            addBtn.className = 'btn btn-secondary btn-sm';
+                        }
+                    }
+                    
+                    // Remove the song from recommendations
+                    const recommendationElement = document.querySelector(`#recommendations .song-item[data-song-id="${songId}"], #recommendationsSection .song-item[data-song-id="${songId}"]`);
+                    if (recommendationElement) {
+                        recommendationElement.style.transition = 'opacity 0.3s, transform 0.3s';
+                        recommendationElement.style.opacity = '0';
+                        recommendationElement.style.transform = 'translateX(-20px)';
+                        setTimeout(() => {
+                            recommendationElement.remove();
+                            
+                            // Check if any recommendations are left
+                            const remainingRecs = document.querySelectorAll('#recommendations .song-item, #recommendationsSection .song-item');
+                            if (remainingRecs.length === 0) {
+                                const recContainer = document.getElementById('recommendations') || document.querySelector('#recommendationsSection .recommendations');
+                                if (recContainer) {
+                                    recContainer.innerHTML = '<div class="empty-state"><h3>All Recommended Songs Added!</h3><p>All suggested songs are now in your playlist</p></div>';
+                                }
+                            }
+                        }, 300);
+                    }
+                } else {
+                    showMessage(data.error, 'error');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showMessage('Error adding song to playlist', 'error');
+            }
+        }
+
+        async function removeFromPlaylist(songId) {
+            try {
+                const response = await fetch('/api/playlist/remove', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ song_id: songId })
+                });
+                
+                const data = await response.json();
+                
+                if (data.error) {
+                    showMessage(data.error, 'error');
+                    return;
+                }
+                
+                showMessage(data.message, 'success');
+                await loadPlaylist();
+                
+            } catch (error) {
+                showMessage('Error removing song from playlist', 'error');
+            }
+        }
+
+        async function loadPlaylist() {
+            try {
+                const response = await fetch('/api/playlist');
+                const data = await response.json();
+                
+                currentPlaylist = data.playlist || [];
+                displayPlaylist(currentPlaylist);
+                updatePlaylistCount();
+                
+            } catch (error) {
+                showMessage('Error loading playlist', 'error');
+            }
+        }
+        
+        function displayPlaylist(playlist) {
+            const container = document.getElementById('playlist');
+            
+            if (playlist.length === 0) {
+                showEmptyState('playlist', 'Empty Playlist', 'Add songs from search results to build your playlist');
+                return;
+            }
+            
+            container.innerHTML = playlist.map((song, index) => `
+                <div class="song-item">
+                    <div class="song-info">
+                        <div class="song-details">
+                            <div class="song-title">
+                                ${index + 1}. ${song.artist} - ${song.song}
+                                <span class="source-badge ${song.source === 'Added by User' ? 'user-added' : 'original'}">${song.source || 'Original Database'}</span>
+                            </div>
+                            <div class="song-meta">Key: ${song.key} | BPM: ${song.bpm}</div>
+                        </div>
+                        <div class="song-actions">
+                            <button onclick="removeFromPlaylist(${song.id})" class="btn btn-danger btn-sm">Remove</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        async function optimizePlaylist() {
+            if (currentPlaylist.length < 2) {
+                showMessage('Need at least 2 songs to optimize playlist', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/playlist/optimize', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.error) {
+                    showMessage(data.error, 'error');
+                    return;
+                }
+                
+                showMessage(data.message, 'success');
+                await loadPlaylist();
+                
+            } catch (error) {
+                showMessage('Error optimizing playlist', 'error');
+            }
+        }
+        
+        async function getRecommendations() {
+            if (currentPlaylist.length === 0) {
+                showMessage('Add some songs to your playlist first to get recommendations', 'error');
+                return;
+            }
+            
+            showLoading('recommendations');
+            document.getElementById('recommendationsSection').style.display = 'block';
+            
+            try {
+                const response = await fetch('/api/recommendations');
+                const data = await response.json();
+                
+                if (data.error) {
+                    showMessage(data.error, 'error');
+                    document.getElementById('recommendationsSection').style.display = 'none';
+                    return;
+                }
+                
+                displayRecommendations(data.recommendations);
+                showMessage(`Found ${data.total} recommended songs`, 'success');
+                
+            } catch (error) {
+                showMessage('Error getting recommendations', 'error');
+                document.getElementById('recommendationsSection').style.display = 'none';
+            }
+        }
+        
+        function displayRecommendations(recommendations) {
+            const container = document.getElementById('recommendations');
+            
+            container.innerHTML = recommendations.map(song => `
+                <div class="song-item" data-song-id="${song.id}">
+                    <div class="song-info">
+                        <div class="song-details">
+                            <div class="song-title">
+                                ${song.artist} - ${song.song}
+                                <span class="source-badge ${song.source === 'Added by User' ? 'user-added' : 'original'}">${song.source || 'Original Database'}</span>
+                            </div>
+                            <div class="song-meta">Key: ${song.key} | BPM: ${song.bpm} | Similarity: ${(1/song.distance).toFixed(3)}</div>
+                        </div>
+                        <div class="song-actions">
+                            <button onclick="addToPlaylist(${song.id})" class="btn btn-success btn-sm">+ Add</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        async function clearPlaylist() {
+            if (currentPlaylist.length === 0) {
+                showMessage('Playlist is already empty', 'error');
+                return;
+            }
+            
+            try {
+                const confirmed = await customConfirm('Clear Playlist', 'Are you sure you want to clear the entire playlist?');
+                
+                if (!confirmed) {
+                    return;
+                }
+                
+                const response = await fetch('/api/playlist/clear', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.error) {
+                    showMessage(data.error, 'error');
+                    return;
+                }
+                
+                showMessage(data.message, 'success');
+                loadPlaylist();
+                document.getElementById('recommendationsSection').style.display = 'none';
+                
+            } catch (error) {
+                showMessage('Error clearing playlist', 'error');
+            }
+        }
+        
+        function showMessage(message, type) {
+            const container = document.getElementById('searchMessage');
+            container.innerHTML = `<div class="message ${type}">${message}</div>`;
+            setTimeout(() => {
+                container.innerHTML = '';
+            }, 5000);
+        }
+        
+        function showLoading(containerId) {
+            document.getElementById(containerId).innerHTML = '<div class="loading">Loading...</div>';
+        }
+        
+        function showEmptyState(containerId, title, description) {
+            document.getElementById(containerId).innerHTML = `
+                <div class="empty-state">
+                    <h3>${title}</h3>
+                    <p>${description}</p>
+                </div>
+            `;
+        }
+        
+        function updatePlaylistCount() {
+            document.getElementById('playlistCount').textContent = currentPlaylist.length;
+        }
+        
+        // Event listeners
+        document.getElementById('searchInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                searchSongs();
+            }
+        });
+        
+        // Load playlist on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadPlaylist();
+            loadAllPlaylists();
+        });
+
+        // ===== MULTIPLE PLAYLIST MANAGEMENT =====
+        
+        let allPlaylists = {};
+        let currentPlaylistName = 'Main Playlist';
+        
+        async function loadAllPlaylists() {
+            console.log('DEBUG: loadAllPlaylists called');
+            try {
+                console.log('DEBUG: Fetching /api/playlists');
+                const response = await fetch('/api/playlists');
+                console.log('DEBUG: Response status:', response.status);
+                const data = await response.json();
+                console.log('DEBUG: Response data:', data);
+                
+                allPlaylists = data.playlists || {};
+                currentPlaylistName = data.current_playlist || 'Main Playlist';
+                
+                console.log('DEBUG: Updated allPlaylists:', allPlaylists);
+                console.log('DEBUG: Updated currentPlaylistName:', currentPlaylistName);
+                
+                updatePlaylistSelector();
+                updateCurrentPlaylistName();
+                
+            } catch (error) {
+                console.error('DEBUG: Error loading playlists:', error);
+            }
+        }
+        
+        function updatePlaylistSelector() {
+            console.log('DEBUG: updatePlaylistSelector called');
+            const selector = document.getElementById('playlistSelector');
+            
+            if (!selector) {
+                console.error('DEBUG: playlistSelector element not found!');
+                return;
+            }
+            
+            console.log('DEBUG: Clearing selector and populating with:', Object.keys(allPlaylists));
+            selector.innerHTML = '';
+            
+            Object.keys(allPlaylists).forEach(name => {
+                const option = document.createElement('option');
+                option.value = name;
+                option.textContent = name;
+                option.selected = name === currentPlaylistName;
+                selector.appendChild(option);
+                console.log('DEBUG: Added option:', name, 'selected:', option.selected);
+            });
+        }
+        
+        function updateCurrentPlaylistName() {
+            console.log('DEBUG: updateCurrentPlaylistName called with:', currentPlaylistName);
+            const element = document.getElementById('currentPlaylistName');
+            if (!element) {
+                console.error('DEBUG: currentPlaylistName element not found!');
+                return;
+            }
+            element.textContent = currentPlaylistName;
+            console.log('DEBUG: Updated currentPlaylistName display to:', currentPlaylistName);
+        }
+        
+        async function switchPlaylist() {
+            const selector = document.getElementById('playlistSelector');
+            const selectedPlaylist = selector.value;
+            
+            if (selectedPlaylist === currentPlaylistName) return;
+            
+            try {
+                const response = await fetch('/api/playlists/switch', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name: selectedPlaylist })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    currentPlaylistName = selectedPlaylist;
+                    updateCurrentPlaylistName();
+                    await loadPlaylist();
+                    showMessage(data.message, 'success');
+                } else {
+                    showMessage(data.error, 'error');
+                }
+            } catch (error) {
+                showMessage('Error switching playlist', 'error');
+            }
+        }
+        
+        async function showCreatePlaylistModal() {
+            console.log('DEBUG: showCreatePlaylistModal called');
+            
+            try {
+                const name = await customPrompt('Create New Playlist', 'Enter name for new playlist:');
+                console.log('DEBUG: User entered name:', name);
+                
+                if (name && name.trim()) {
+                    console.log('DEBUG: Calling createPlaylist with:', name.trim());
+                    createPlaylist(name.trim());
+                } else {
+                    console.log('DEBUG: No valid name entered');
+                }
+            } catch (error) {
+                console.log('DEBUG: Modal was cancelled or failed:', error);
+            }
+        }
+        
+        async function createPlaylist(name) {
+            console.log('DEBUG: createPlaylist called with:', name);
+            try {
+                console.log('DEBUG: Sending POST to /api/playlists/create');
+                const response = await fetch('/api/playlists/create', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name: name })
+                });
+                
+                console.log('DEBUG: Response status:', response.status);
+                const data = await response.json();
+                console.log('DEBUG: Response data:', data);
+                
+                if (data.success) {
+                    console.log('DEBUG: Success! Reloading playlists...');
+                    await loadAllPlaylists();
+                    await loadPlaylist();
+                    showMessage(data.message, 'success');
+                } else {
+                    console.log('DEBUG: Server error:', data.error);
+                    showMessage(data.error || 'Unknown error creating playlist', 'error');
+                }
+            } catch (error) {
+                console.error('DEBUG: Exception in createPlaylist:', error);
+                showMessage('Error creating playlist: ' + error.message, 'error');
+            }
+        }
+        
+        async function showRenamePlaylistModal() {
+            console.log('DEBUG: showRenamePlaylistModal called, current playlist:', currentPlaylistName);
+            
+            try {
+                const newName = await customPrompt('Rename Playlist', `Enter new name for "${currentPlaylistName}":`, currentPlaylistName);
+                console.log('DEBUG: User entered new name:', newName);
+                
+                if (newName && newName.trim() && newName.trim() !== currentPlaylistName) {
+                    console.log('DEBUG: Calling renamePlaylist');
+                    renamePlaylist(currentPlaylistName, newName.trim());
+                } else {
+                    console.log('DEBUG: No valid new name or same name');
+                }
+            } catch (error) {
+                console.log('DEBUG: Modal was cancelled or failed:', error);
+            }
+        }
+        
+        async function renamePlaylist(oldName, newName) {
+            console.log('DEBUG: renamePlaylist called with:', oldName, '=>', newName);
+            try {
+                console.log('DEBUG: Sending POST to /api/playlists/rename');
+                const response = await fetch('/api/playlists/rename', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ old_name: oldName, new_name: newName })
+                });
+                
+                console.log('DEBUG: Response status:', response.status);
+                const data = await response.json();
+                console.log('DEBUG: Response data:', data);
+                
+                if (data.success) {
+                    console.log('DEBUG: Success! Updating current playlist name...');
+                    currentPlaylistName = newName;
+                    await loadAllPlaylists();
+                    showMessage(data.message, 'success');
+                } else {
+                    console.log('DEBUG: Server error:', data.error);
+                    showMessage(data.error || 'Unknown error renaming playlist', 'error');
+                }
+            } catch (error) {
+                console.error('DEBUG: Exception in renamePlaylist:', error);
+                showMessage('Error renaming playlist: ' + error.message, 'error');
+            }
+        }
+        
+        async function deleteCurrentPlaylist() {
+            console.log('DEBUG: deleteCurrentPlaylist called, current playlist:', currentPlaylistName);
+            console.log('DEBUG: All playlists:', allPlaylists);
+            
+            if (Object.keys(allPlaylists).length <= 1) {
+                console.log('DEBUG: Cannot delete - only one playlist remaining');
+                showMessage('Cannot delete the last playlist', 'error');
+                return;
+            }
+            
+            try {
+                const confirmed = await customConfirm('Delete Playlist', `Are you sure you want to delete "${currentPlaylistName}"? This cannot be undone.`);
+                console.log('DEBUG: User confirmation result:', confirmed);
+                
+                if (confirmed) {
+                    console.log('DEBUG: User confirmed deletion');
+                    try {
+                        console.log('DEBUG: Sending POST to /api/playlists/delete');
+                        const response = await fetch('/api/playlists/delete', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ name: currentPlaylistName })
+                        });
+                        
+                        console.log('DEBUG: Response status:', response.status);
+                        const data = await response.json();
+                        console.log('DEBUG: Response data:', data);
+                        
+                        if (data.success) {
+                            console.log('DEBUG: Success! Updating current playlist...');
+                            currentPlaylistName = data.current_playlist;
+                            await loadAllPlaylists();
+                            await loadPlaylist();
+                            showMessage(data.message, 'success');
+                        } else {
+                            console.log('DEBUG: Server error:', data.error);
+                            showMessage(data.error || 'Unknown error deleting playlist', 'error');
+                        }
+                    } catch (error) {
+                        console.error('DEBUG: Exception in deleteCurrentPlaylist:', error);
+                        showMessage('Error deleting playlist: ' + error.message, 'error');
+                    }
+                } else {
+                    console.log('DEBUG: User cancelled deletion');
+                }
+            } catch (error) {
+                console.log('DEBUG: Modal was cancelled or failed:', error);
+            }
+        }
+        
+        async function exportCurrentPlaylist() {
+            console.log('DEBUG: exportCurrentPlaylist called, current playlist:', currentPlaylistName);
+            try {
+                console.log('DEBUG: Sending GET to /api/playlists/export/' + encodeURIComponent(currentPlaylistName));
+                const response = await fetch(`/api/playlists/export/${encodeURIComponent(currentPlaylistName)}`);
+                console.log('DEBUG: Response status:', response.status);
+                const data = await response.json();
+                console.log('DEBUG: Response data:', data);
+                
+                if (data.success) {
+                    console.log('DEBUG: Export successful!');
+                    showMessage(data.message, 'success');
+                } else {
+                    console.log('DEBUG: Server error:', data.error);
+                    showMessage(data.error || 'Unknown error exporting playlist', 'error');
+                }
+            } catch (error) {
+                console.error('DEBUG: Exception in exportCurrentPlaylist:', error);
+                showMessage('Error exporting playlist: ' + error.message, 'error');
+            }
+        }
+
+        async function showPersistentPlaylists() {
+            try {
+                const response = await fetch('/api/playlists/load-persistent');
+                const data = await response.json();
+                
+                const container = document.getElementById('persistentPlaylistsList');
+                
+                if (data.persistent_playlists && data.persistent_playlists.length > 0) {
+                    container.style.display = 'block';
+                    container.innerHTML = `
+                        <h4 style="margin-bottom: 10px; color: #333;">Available Saved Playlists (${data.total})</h4>
+                        <div style="background: #f8f9fa; border-radius: 8px; padding: 15px;">
+                            ${data.persistent_playlists.map(playlist => `
+                                <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px; margin-bottom: 10px; background: white; border-radius: 6px; border: 1px solid #e9ecef;">
+                                    <div>
+                                        <strong>${playlist.name}</strong>
+                                        <div style="font-size: 0.8em; color: #666;">
+                                            ${playlist.song_count} songs • Created: ${new Date(playlist.created_at).toLocaleDateString()}
+                                        </div>
+                                    </div>
+                                    <button onclick="loadPersistentPlaylist('${playlist.name}')" class="btn btn-primary btn-sm">Load</button>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                } else {
+                    container.style.display = 'block';
+                    container.innerHTML = `
+                        <div style="background: #f8f9fa; border-radius: 8px; padding: 20px; text-align: center; color: #666;">
+                            <h4>No Saved Playlists Found</h4>
+                            <p>Import a CSV file to create your first persistent playlist!</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                showMessage('Error loading persistent playlists', 'error');
+            }
+        }
+
+        async function loadPersistentPlaylist(playlistName) {
+            try {
+                showMessage('Loading playlist...', 'success');
+                
+                const response = await fetch('/api/playlists/load-persistent', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ name: playlistName })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showMessage(data.message, 'success');
+                    
+                    currentPlaylistName = data.playlist_name;
+                    currentPlaylist = []; // Will be loaded by loadPlaylist
+                    
+                    loadPlaylist();
+                    loadAllPlaylists();
+                    
+                    document.getElementById('persistentPlaylistsList').style.display = 'none';
+                } else {
+                    showMessage(data.error, 'error');
+                }
+            } catch (error) {
+                showMessage('Error loading playlist', 'error');
+            }
+        }
+    </script>
+</body>
+</html>
