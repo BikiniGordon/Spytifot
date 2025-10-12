@@ -227,12 +227,11 @@ def greedy_reorder_from_matrix(similarity_matrix):
     return order
 
 
-def reorder_playlist_for_flow(playlist, similarity_method='euclidean'):
+def reorder_playlist_for_flow(playlist, similarity_method='euclidean', use_standardization=False):
     if not playlist or len(playlist) < 2:
         print("Need at least 2 songs to reorder")
         return playlist, []
-    
-    result = analyze_playlist_similarity(playlist, False, similarity_method)
+    result = analyze_playlist_similarity(playlist, use_standardization, similarity_method)
     if result is None:
         return playlist, []
     
@@ -306,98 +305,7 @@ def find_songs_closest_to_playlist_average(playlist, df_clean, top_n=5):
 
     closest_songs['Distance_to_Playlist_Avg'] = [dist for dist, _ in distances[:top_n]]
     
-    # for console debugging
-    
-    # print(f"\nTOP {top_n} SONGS CLOSEST TO PLAYLIST AVERAGE:")
-    # print("=" * 80)
-    # for i, (_, row) in enumerate(closest_songs.iterrows(), 1):
-    #     print(f"{i:2d}. ID:{row['ID']:4d} | {row['Artist']} - {row['Song'][:35]:<35} | "
-    #           f"BPM: {row['BPM']:3d} | Key: {row['Key']} ({row['Key_Scalar']:2d}) | "
-    #           f"Distance: {row['Distance_to_Playlist_Avg']:.2f}")
-    
     return closest_songs[['ID', 'Artist', 'Song', 'Key', 'BPM', 'Key_Scalar', 'Distance_to_Playlist_Avg']]
-
-
-# def import_manual_playlist_csv(csv_file_path, df_main=None):
-#     try:
-#         # Read the CSV file
-#         print(f"1. Reading CSV file: {csv_file_path}")
-#         df_playlist = pd.read_csv(csv_file_path)
-#         print(f"   Found {len(df_playlist)} songs in playlist")
-        
-#         # Validate columns
-#         required_columns = ['Artist', 'Song', 'BPM', 'Key_mixed_in', 'Note']
-#         missing_columns = [col for col in required_columns if col not in df_playlist.columns]
-        
-#         if missing_columns:
-#             print(f"Missing required columns: {missing_columns}")
-#             print(f"   Required columns: {required_columns}")
-#             print(f"   Found columns: {list(df_playlist.columns)}")
-#             return pd.DataFrame()
-        
-#         # Create the processed dataframe
-#         processed_songs = []
-        
-#         for idx, row in df_playlist.iterrows():
-#             # Convert Camelot key to scalar
-#             camelot_key = str(row['Key_mixed_in']).strip()
-#             key_scalar = convert_camelot_to_scalar_single(camelot_key)
-            
-#             # Create processed song entry
-#             song_entry = {
-#                 'Artist': str(row['Artist']).strip(),
-#                 'Song': str(row['Song']).strip(),
-#                 'BPM': int(row['BPM']) if pd.notna(row['BPM']) else '',
-#                 'Key': camelot_key,  # Keep original Camelot notation
-#                 'Key_Scalar': key_scalar,
-#                 'Notes': str(row['Note']).strip() if pd.notna(row['Note']) else ''
-#             }
-            
-#             processed_songs.append(song_entry)
-        
-#         # Convert to DataFrame
-#         df_processed = pd.DataFrame(processed_songs)
-        
-#         print(f"3. Successfully processed {len(df_processed)} songs")
-#         print(f"   Key range: {df_processed['Key_Scalar'].min()} - {df_processed['Key_Scalar'].max()}")
-        
-#         # If main database is provided, merge and assign new IDs
-#         if df_main is not None:
-#             print("4. Merging with main database...")
-            
-#             # Get the highest ID from main database
-#             max_id = df_main['ID'].max() if 'ID' in df_main.columns and len(df_main) > 0 else 0
-            
-#             # Assign new IDs starting from max_id + 1
-#             df_processed['ID'] = range(max_id + 1, max_id + 1 + len(df_processed))
-            
-#             # Reorder columns to match main database
-#             column_order = ['ID', 'Artist', 'Song', 'BPM', 'Key', 'Key_Scalar', 'Notes']
-#             df_processed = df_processed[column_order]
-            
-#             # Merge with main database
-#             df_combined = pd.concat([df_main, df_processed], ignore_index=True)
-            
-#             print(f"   Combined database now has {len(df_combined)} songs")
-#             print(f"   New song IDs: {max_id + 1} - {max_id + len(df_processed)}")
-            
-#             return df_combined
-#         else:
-#             # Just add IDs to the processed playlist
-#             df_processed['ID'] = range(1, len(df_processed) + 1)
-            
-#             # Reorder columns
-#             column_order = ['ID', 'Artist', 'Song', 'BPM', 'Key', 'Key_Scalar', 'Notes']
-#             df_processed = df_processed[column_order]
-            
-#             return df_processed
-            
-#     except FileNotFoundError:
-#         print(f"CSV file not found: {csv_file_path}")
-#         return pd.DataFrame()
-#     except Exception as e:
-#         print(f"Error processing CSV file: {str(e)}")
-#         return pd.DataFrame()
 
 def convert_camelot_to_scalar_single(camelot_key):
     # Map Camelot keys to scalar values based on wheel position
@@ -485,52 +393,8 @@ class PlaylistManager:
     def get_recommendations(self, top_n=5):
         return find_songs_closest_to_playlist_average(self.playlist, self.df_clean, top_n)
     
-    # def import_manual_playlist(self, csv_file_path):
-    #     """
-    #     Import manual playlist from CSV and add to main database
-        
-    #     Parameters:
-    #     csv_file_path (str): Path to CSV file with manual playlist
-        
-    #     Returns:
-    #     list: List of new song IDs added to database
-    #     """
-    #     print(f"Importing manual playlist: {csv_file_path}")
-        
-    #     # Import and merge with current database
-    #     df_combined = import_manual_playlist_csv(csv_file_path, self.df_clean)
-        
-    #     if df_combined.empty:
-    #         print("Failed to import playlist")
-    #         return []
-        
-    #     # Get the new song IDs (songs that were added)
-    #     original_count = len(self.df_clean)
-    #     new_song_ids = list(range(original_count + 1, len(df_combined) + 1))
-        
-    #     # Update the internal database
-    #     self.df_clean = df_combined
-        
-    #     print(f"Successfully imported playlist!")
-    #     print(f"   Added {len(new_song_ids)} new songs")
-    #     print(f"   New song IDs: {new_song_ids}")
-        
-    #     return new_song_ids
-    
     def save_updated_database(self, filename="duuzu_song_database_cleaned.csv"):
         save_combined_database(self.df_clean, filename)
-    
-    # def add_manual_songs_to_playlist(self, csv_file_path):
-    #     # Import the manual playlist
-    #     new_song_ids = self.import_manual_playlist(csv_file_path)
-        
-    #     if new_song_ids:
-    #         # Add all new songs to current playlist
-    #         print(f"Adding {len(new_song_ids)} imported songs to playlist...")
-    #         self.add_songs(new_song_ids)
-    #         print(f"All imported songs added to playlist!")
-    #     else:
-    #         print("No songs were imported")
 
     def export_playlist(self, filename="playlist.csv"):
         if not self.playlist:

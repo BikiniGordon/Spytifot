@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>{% block title %}Music Playlist Manager{% endblock %}</title>
+
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    html,body{height:100%}
+    body{
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      /* move gradient to a fixed pseudo-element to avoid restart on long pages */
+      background: none;
+      color:#eee;
+      min-height:100vh;
+      position: relative;
+    }
+    body::before{
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      background: linear-gradient(135deg,#0f0f1a 0%, #1b1b2f 100%);
+      background-repeat: no-repeat;
+      background-attachment: fixed;
+    }
+
+    /* layout */
+    .app {
+      display:flex;
+      min-height:100vh;
+    }
+
+    /* SIDEBAR */
+    .sidebar{
+      width:260px;
+      background: linear-gradient(180deg,#0b0b10,#1b1b2f);
+      padding:28px 18px;
+      display:flex;
+      flex-direction:column;
+      gap:14px;
+      border-right:1px solid rgba(255,255,255,0.03);
+      position:fixed;
+      top:0;left:0;bottom:0;
+    }
+
+    .brand{
+      display:flex;align-items:center;gap:12px;margin-bottom:6px;
+    }
+    .logo {
+      width:44px;height:44px;border-radius:8px;
+      background:linear-gradient(135deg,#764ba2,#9b59b6);
+      display:flex;align-items:center;justify-content:center;font-weight:700;color:white;
+      font-size:18px;
+    }
+    .brand h1{font-size:18px;color:#f3f3f3;font-weight:700}
+
+    .nav{
+      margin-top:12px;display:flex;flex-direction:column;gap:8px;
+    }
+
+    .nav a{
+      display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:8px;color:rgba(255,255,255,0.85);
+      text-decoration:none;font-weight:600;
+      transition:all .18s;
+    }
+
+    .nav a .icon{width:28px;text-align:center;opacity:0.9}
+    .nav a:hover{transform:translateX(6px);background:rgba(155,89,182,0.08)}
+    .nav a.active{background:linear-gradient(90deg, rgba(155,89,182,0.18), rgba(118,75,162,0.06));color:#fff;box-shadow:inset 0 0 0 1px rgba(155,89,182,0.06)}
+
+    .spacer{flex:1}
+
+    /* content area */
+    .content {
+      margin-left:260px;
+      padding:28px;
+      width:100%;
+    }
+
+    .container-card{
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      padding:22px;border-radius:12px;border:1px solid rgba(255,255,255,0.03);
+      color:#f5f5f5;box-shadow:0 8px 20px rgba(0,0,0,0.4);
+    }
+
+    h2{color:#fff;margin-bottom:12px}
+    .search-input{width:100%;padding:12px 14px;border-radius:10px;border:1px solid rgba(255,255,255,0.06);background:rgba(255,255,255,0.02);color:#fff}
+    .btn{padding:10px 12px;border-radius:10px;border:none;cursor:pointer;font-weight:700}
+    .btn-primary{background:linear-gradient(90deg,#9b59b6,#764ba2);color:white}
+    .btn-success{background:#28a745;color:white}
+    .btn-warning{background:#ffc107;color:#111}
+    .btn-danger{background:#e74c3c;color:white}
+    .small{font-size:0.9rem}
+
+    .song-item{background:rgba(255,255,255,0.02);padding:12px;border-radius:8px;border:1px solid rgba(255,255,255,0.03);margin-bottom:10px;display:flex;justify-content:space-between;align-items:center}
+    .song-title{font-weight:700}
+    .source-badge{padding:4px 8px;border-radius:999px;font-size:0.75rem;background:rgba(0,0,0,0.25)}
+    .source-badge.user-added{background:#28a745;color:white}
+    .empty-state{text-align:center;padding:26px;color:rgba(255,255,255,0.55)}
+
+    /* responsive */
+    @media (max-width:900px){
+      .sidebar{position:relative;width:100%;display:flex;flex-direction:row;overflow:auto;height:auto}
+      .content{margin-left:0;padding:18px}
+    }
+  </style>
+
+  {% block head_extra %}{% endblock %}
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="logo">S</div>
+        <div>
+          <h1>SPY<span style="color:#9b59b6">Tifot</span></h1>
+          <div class="small" style="color:rgba(255,255,255,0.6)">Playlist Manager</div>
+        </div>
+      </div>
+
+      <nav class="nav" aria-label="Main">
+        <a href="{{ url_for('search_page') }}" class="{% if active == 'search' %}active{% endif %}"><span class="icon">🔍</span> Search</a>
+        <a href="{{ url_for('playlist_page') }}" class="{% if active == 'playlist' %}active{% endif %}"><span class="icon">🎵</span> Playlist</a>
+        <a href="{{ url_for('library_page') }}" class="{% if active == 'library' %}active{% endif %}"><span class="icon">📚</span> Library</a>
+      </nav>
+
+      <div class="spacer"></div>
+
+      <div style="font-size:0.85rem;color:rgba(255,255,255,0.6);">
+        <div>Built with ❤️</div>
+        <div style="margin-top:8px;font-size:0.8rem">Local dev</div>
+      </div>
+    </aside>
+
+    <main class="content">
+      {% block content %}
+      <!-- default fallback content -->
+      <div class="container-card"><h2>Welcome</h2><p class="small">Select Search / Playlist / Library from the left sidebar.</p></div>
+      {% endblock %}
+    </main>
+  </div>
+
+  <!-- Shared scripts: these contain the same JS functions you had in index.html.
+       They check whether elements exist before operating, so you can reuse across pages. -->
+  <script>
+    // small helpers
+    function el(id){return document.getElementById(id)}
+    function showMessage(msg,type='success'){
+      let container = el('searchMessage') || document.createElement('div');
+      if(!el('searchMessage')){container.id='searchMessage'; document.body.appendChild(container)}
+      container.innerHTML = '<div style="padding:12px;border-radius:8px;margin:12px 0;font-weight:700;color:'+ (type==='error'?'#721c24':'#155724') +';background:'+(type==='error'?'#f8d7da':'#d4edda')+'">'+msg+'</div>';
+      setTimeout(()=>{ if(el('searchMessage')) el('searchMessage').innerHTML=''; },4500);
+    }
+
+    // --- generic fetch helpers used by pages ---
+    async function apiFetch(url, opts){
+      try{
+        const res = await fetch(url, opts);
+        const json = await res.json();
+        return json;
+      } catch(e){
+        console.error('apiFetch error',e);
+        throw e;
+      }
+    }
+    async function searchSongs(){
+      const input = el('searchInput');
+      if(!input){ return }
+      const query = input.value.trim();
+      if(!query){ showMessage('Please enter a search term','error'); return }
+      const sr = el('searchResults');
+      if(sr) sr.innerHTML = '<div class="empty-state">Loading...</div>';
+      try{
+        const data = await apiFetch(`/api/search?q=${encodeURIComponent(query)}`);
+        if(data.error){ if(sr) sr.innerHTML = `<div class="empty-state">${data.error}</div>`; showMessage(data.error,'error'); return }
+        if(sr){
+          if(!data.songs || data.songs.length===0){
+            sr.innerHTML = `<div class="empty-state"><h3>No Results</h3><p>Try another search</p></div>`;
+            showMessage(`Found 0 songs for "${data.query}"`,'error');
+            return;
+          }
+          sr.innerHTML = data.songs.map(song=>`
+            <div class="song-item" data-id="${song.id}">
+              <div>
+                <div class="song-title">${song.artist} - ${song.song}</div>
+                <div class="small">Key: ${song.key} • BPM: ${song.bpm} • ID: ${song.id}</div>
+              </div>
+              <div>
+                <button class="btn btn-primary" onclick="addToPlaylist(${song.id})">+ Add</button>
+              </div>
+            </div>
+          `).join('');
+          showMessage(`Found ${data.total} songs for "${data.query}"`,'success');
+        }
+      } catch(e){ if(sr) sr.innerHTML = `<div class="empty-state">Failed to search</div>`; showMessage('Error searching songs','error') }
+    }
+
+    async function addToPlaylist(songId){
+      try{
+        const data = await apiFetch('/api/playlist/add', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({song_id:songId})});
+        if(data.success){ showMessage(data.message,'success'); await loadPlaylist(); }
+        else showMessage(data.error||'Add failed','error');
+      }catch(e){ showMessage('Error adding song to playlist','error') }
+    }
+
+    async function removeFromPlaylist(songId){
+      try{
+        const data = await apiFetch('/api/playlist/remove', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({song_id:songId})});
+        if(data.success){ showMessage(data.message,'success'); await loadPlaylist(); }
+        else showMessage(data.error||'Remove failed','error');
+      }catch(e){ showMessage('Error removing song','error') }
+    }
+
+    async function loadPlaylist(){
+      // if playlist element not on this page, skip
+      const container = el('playlist');
+      const nameEl = el('currentPlaylistName');
+      if(!container && !nameEl) return;
+      try{
+        const data = await apiFetch('/api/playlist');
+        const playlist = data.playlist || [];
+        if(nameEl) nameEl.textContent = data.current_playlist || 'Main Playlist';
+        if(!container) return;
+        if(playlist.length===0){
+          container.innerHTML = `<div class="empty-state"><h3>Empty Playlist</h3><p>Add songs from Search</p></div>`;
+          if(el('playlistCount')) el('playlistCount').textContent = 0;
+          return;
+        }
+        container.innerHTML = playlist.map((s,i)=>`
+          <div class="song-item">
+            <div>
+              <div class="song-title">${i+1}. ${s.artist} - ${s.song}</div>
+              <div class="small">Key: ${s.key} • BPM: ${s.bpm}</div>
+            </div>
+            <div>
+              <button class="btn btn-danger" onclick="removeFromPlaylist(${s.id})">Remove</button>
+            </div>
+          </div>
+        `).join('');
+        if(el('playlistCount')) el('playlistCount').textContent = playlist.length;
+      }catch(e){ showMessage('Error loading playlist','error') }
+    }
+
+    async function optimizePlaylist(){
+      try{
+        const simSel = document.getElementById('similaritySelect');
+        const normChk = document.getElementById('normalizeToggle');
+        const payload = {
+          similarity: simSel ? simSel.value : 'euclidean',
+          normalize: normChk ? !!normChk.checked : false
+        };
+        const res = await apiFetch('/api/playlist/optimize', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)});
+        if(res.success){ showMessage(res.message,'success'); await loadPlaylist(); } else showMessage(res.error||'Optimize failed','error');
+      }catch(e){ showMessage('Error optimizing playlist','error') }
+    }
+
+    async function getRecommendations(){
+      // show recommendations if element exists
+      const recContainer = el('recommendations');
+      if(!recContainer){ showMessage('Recommendations not available on this page','error'); return }
+      try{
+        const res = await apiFetch('/api/recommendations');
+        if(res.error){ showMessage(res.error,'error'); recContainer.innerHTML = `<div class="empty-state">${res.error}</div>`; return }
+        recContainer.innerHTML = (res.recommendations||[]).map(r=>`
+          <div class="song-item">
+            <div>
+              <div class="song-title">${r.artist} - ${r.song}</div>
+              <div class="small">Key: ${r.key} • BPM: ${r.bpm}</div>
+            </div>
+            <div><button class="btn btn-primary" onclick="addToPlaylist(${r.id})">+ Add</button></div>
+          </div>
+        `).join('');
+        showMessage(`Found ${res.total} recommendations`,'success');
+      }catch(e){ showMessage('Error getting recommendations','error') }
+    }
+
+    async function loadAllPlaylists(){
+      const selector = el('playlistSelector');
+      if(!selector) return;
+      try{
+        const res = await apiFetch('/api/playlists');
+        const playlists = res.playlists || {};
+        const current = res.current_playlist || 'Main Playlist';
+        selector.innerHTML = '';
+        Object.keys(playlists).forEach(name=>{
+          const opt = document.createElement('option'); opt.value=name; opt.textContent=name;
+          if(name===current) opt.selected=true; selector.appendChild(opt);
+        });
+      }catch(e){ console.error(e) }
+    }
+
+    async function switchPlaylist(){
+      const sel = el('playlistSelector'); if(!sel) return;
+      try{
+        const res = await apiFetch('/api/playlists/switch',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:sel.value})});
+        if(res.success){ showMessage(res.message,'success'); await loadPlaylist(); await loadAllPlaylists(); } else showMessage(res.error||'Switch failed','error');
+      }catch(e){ showMessage('Error switching playlist','error') }
+    }
+
+    async function uploadPlaylist(){
+      const fileInput = el('csvFile');
+      if(!fileInput || !fileInput.files || fileInput.files.length===0){ showMessage('Please select a CSV file','error'); return }
+      const f = fileInput.files[0];
+      if(!f.name.toLowerCase().endsWith('.csv')){ showMessage('Please choose a CSV file','error'); return }
+      const fd = new FormData(); fd.append('file', f);
+      try{
+        showMessage('Uploading...','success');
+        const resp = await fetch('/api/upload-playlist', { method:'POST', body: fd });
+        const data = await resp.json();
+        if(data.error){ showMessage(data.error,'error'); return }
+        showMessage(data.message,'success');
+        fileInput.value='';
+        await loadAllPlaylists(); await loadPlaylist();
+      }catch(e){ showMessage('Error uploading playlist','error') }
+    }
+    document.addEventListener('DOMContentLoaded', function(){
+      loadPlaylist(); loadAllPlaylists();
+      const si = el('searchInput');
+      if(si) si.addEventListener('keypress', (e)=>{ if(e.key==='Enter') searchSongs() });
+    });
+  </script>
+
+  {% block body_extra %}{% endblock %}
+</body>
+</html>

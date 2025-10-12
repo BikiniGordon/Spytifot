@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}Playlist - Music Playlist{% endblock %}
+
+{% block content %}
+  <div class="container-card">
+    <h2>Playlist Manager</h2>
+    <div style="display:flex;gap:12px;align-items:center;margin-bottom:12px;flex-wrap:wrap;">
+      <div>
+        <label style="font-weight:700;margin-right:6px">Current Playlist:</label>
+        <select id="playlistSelector" onchange="switchPlaylist()" style="padding:8px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.04);color:#fff"></select>
+      </div>
+
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-primary" onclick="(async ()=>{ const name=prompt('New playlist name'); if(name) { const res=await fetch('/api/playlists/create',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name})}); const j=await res.json(); if(j.success){ showMessage(j.message,'success'); loadAllPlaylists(); loadPlaylist(); } else showMessage(j.error,'error') } })()">New</button>
+
+        <button class="btn btn-warning" onclick="(async ()=>{ const sel=document.getElementById('playlistSelector'); if(!sel) return; const old=sel.value; const nn=prompt('Rename playlist',old); if(nn && nn!==old){ const res=await fetch('/api/playlists/rename',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({old_name:old,new_name:nn})}); const j=await res.json(); if(j.success){ showMessage(j.message,'success'); loadAllPlaylists(); } else showMessage(j.error,'error') } })()">Rename</button>
+
+        <button class="btn btn-danger" onclick="(async ()=>{ if(!confirm('Delete this playlist?')) return; const sel=document.getElementById('playlistSelector'); if(!sel) return; const res=await fetch('/api/playlists/delete',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:sel.value})}); const j=await res.json(); if(j.success){ showMessage(j.message,'success'); loadAllPlaylists(); loadPlaylist(); } else showMessage(j.error,'error') })()">Delete</button>
+
+        <button class="btn btn-success" onclick="exportCurrentPlaylist()">Export</button>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:12px;align-items:center;margin-bottom:12px;flex-wrap:wrap;">
+      <div style="display:flex;gap:8px;align-items:center;">
+        <label for="similaritySelect" class="small" style="opacity:0.8">Similarity</label>
+        <select id="similaritySelect" style="padding:6px 8px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.1);color:#fff">
+          <option value="euclidean" selected>Euclidean</option>
+          <option value="cosine">Cosine</option>
+          <option value="weighted_cosine">Weighted Cosine</option>
+        </select>
+        <label for="normalizeToggle" class="small" style="margin-left:12px;opacity:0.8">Normalize</label>
+        <input type="checkbox" id="normalizeToggle" />
+      </div>
+      <div style="display:flex;gap:12px;align-items:center;">
+        <button class="btn btn-warning" onclick="optimizePlaylist()">Optimize Flow</button>
+        <button class="btn btn-primary" onclick="getRecommendations()">Get Recommendations</button>
+        <button class="btn btn-danger" onclick="(async ()=>{ if(!confirm('Clear playlist?')) return; const r=await fetch('/api/playlist/clear',{method:'POST'}); const j=await r.json(); if(j.success){ showMessage(j.message,'success'); loadPlaylist(); } else showMessage(j.error,'error') })()">Clear All</button>
+      </div>
+    </div>
+
+    <h3 style="margin-bottom:8px"><span id="currentPlaylistName">My Playlist</span> (<span id="playlistCount">0</span>)</h3>
+
+    <div id="playlist" style="margin-top:12px"></div>
+  </div>
+
+  <div style="height:16px"></div>
+
+  <div class="container-card" id="recommendationsSection">
+    <h2>Recommendations</h2>
+    <p class="small" style="color:rgba(255,255,255,0.6)">Based on your playlist</p>
+    <div id="recommendations" style="margin-top:12px"></div>
+  </div>
+{% endblock %}

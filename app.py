@@ -1,6 +1,4 @@
-#!/usr/bin/env python3
-
-from flask import Flask, render_template, request, jsonify, session
+from flask import Flask, render_template, request, jsonify, session, redirect, url_for
 import pandas as pd
 import json
 from music_database_analyzer import find_songs_closest_to_playlist_average, reorder_playlist_for_flow, convert_key_to_scalar
@@ -29,16 +27,20 @@ def initialize_app():
     
     csv_file = 'duuzu_song_database_cleaned.csv'
     if os.path.exists(csv_file):
-        df_clean = pd.read_csv(csv_file)
+        try:
+            df_clean = pd.read_csv(csv_file)
+        except UnicodeDecodeError:
+            try:
+                df_clean = pd.read_csv(csv_file, encoding='latin1')
+            except UnicodeDecodeError:
+                df_clean = pd.read_csv(csv_file, encoding='cp1252')
         # print(f"Loaded {len(df_clean)} songs from database")
         
         if 'Source' not in df_clean.columns:
             df_clean['Source'] = 'Original Database'
 
         load_user_songs_to_database()
-        
         load_persistent_playlists()
-        
         return True
     else:
         # print("Database file not found. Please run the data processing first.")
@@ -233,11 +235,6 @@ def save_playlist_persistently(playlist_name, playlist_data):
     except Exception as e:
         print(f"Error saving playlist: {e}")
         return False
-
-@app.route('/')
-def index():
-    # main page
-    return render_template('index.html')
 
 @app.route('/api/search')
 def search():
@@ -459,6 +456,13 @@ def optimize_playlist():
         return jsonify({'error': 'Need at least 2 songs to optimize'})
     
     try:
+        opts = {}
+        try:
+            opts = request.get_json(silent=True) or {}
+        except Exception:
+            opts = {}
+        similarity_method = opts.get('similarity', 'euclidean')
+        normalize_flag = bool(opts.get('normalize', False))
         # convert session playlist to format expected by music_database_analyzer
         # create a mapping to preserve source information
         playlist_data = []
@@ -484,7 +488,7 @@ def optimize_playlist():
         print(f"DEBUG: Converted playlist_data: {len(playlist_data)} songs")
         print(f"DEBUG: Source mapping: {source_mapping}")
 
-        optimized_playlist, transition_scores = reorder_playlist_for_flow(playlist_data, 'euclidean')
+        optimized_playlist, transition_scores = reorder_playlist_for_flow(playlist_data, similarity_method, normalize_flag)
         
         print(f"DEBUG: After optimization: {len(optimized_playlist)} songs")
 
@@ -516,8 +520,10 @@ def optimize_playlist():
         
         return jsonify({
             'success': True,
-            'message': f'Playlist optimized! Average similarity: {avg_score:.4f}',
+            'message': f'Playlist optimized! Average similarity: {avg_score:.4f} (method: {similarity_method}, normalize: {normalize_flag})',
             'avg_similarity': avg_score,
+            'similarity_method': similarity_method,
+            'normalize': normalize_flag,
             'playlist': session['playlist']
         })
     
@@ -906,6 +912,24 @@ def get_stats():
     }
     
     return jsonify(stats)
+
+@app.route('/')
+def root():
+    # redirect to search by default
+    return redirect(url_for('search_page'))
+
+@app.route('/search')
+def search_page():
+    # pass active identifier so sidebar can highlight
+    return render_template('search.html', active='search')
+
+@app.route('/playlist')
+def playlist_page():
+    return render_template('playlist.html', active='playlist')
+
+@app.route('/library')
+def library_page():
+    return render_template('library.html', active='library')
 
 if __name__ == '__main__':
     if initialize_app():
