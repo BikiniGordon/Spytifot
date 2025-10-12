@@ -5,11 +5,12 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>{% block title %}Music Playlist Manager{% endblock %}</title>
 
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
   <style>
     *{box-sizing:border-box;margin:0;padding:0}
     html,body{height:100%}
     body{
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      font-family: 'Poppins', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       /* move gradient to a fixed pseudo-element to avoid restart on long pages */
       background: none;
       color:#eee;
@@ -92,7 +93,7 @@
     .btn-success{background:#28a745;color:white}
     .btn-warning{background:#ffc107;color:#111}
     .btn-danger{background:#e74c3c;color:white}
-    .small{font-size:0.9rem}
+  .small{font-size:0.9rem}
 
   .song-item{background:rgba(255,255,255,0.02);padding:12px;border-radius:8px;border:1px solid rgba(255,255,255,0.03);margin-bottom:10px;display:flex;align-items:center;gap:12px}
   .song-item > div:first-child{display:flex;flex-direction:column;gap:4px;flex:1 1 auto;text-align:left}
