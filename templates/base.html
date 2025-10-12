@@ -94,8 +94,10 @@
     .btn-danger{background:#e74c3c;color:white}
     .small{font-size:0.9rem}
 
-    .song-item{background:rgba(255,255,255,0.02);padding:12px;border-radius:8px;border:1px solid rgba(255,255,255,0.03);margin-bottom:10px;display:flex;justify-content:space-between;align-items:center}
-    .song-title{font-weight:700}
+  .song-item{background:rgba(255,255,255,0.02);padding:12px;border-radius:8px;border:1px solid rgba(255,255,255,0.03);margin-bottom:10px;display:flex;align-items:center;gap:12px}
+  .song-item > div:first-child{display:flex;flex-direction:column;gap:4px;flex:1 1 auto;text-align:left}
+  .song-item > div:last-child{margin-left:auto;flex:0 0 auto}
+  .song-title{font-weight:700;text-align:left}
     .source-badge{padding:4px 8px;border-radius:999px;font-size:0.75rem;background:rgba(0,0,0,0.25)}
     .source-badge.user-added{background:#28a745;color:white}
     .empty-state{text-align:center;padding:26px;color:rgba(255,255,255,0.55)}
@@ -314,6 +316,43 @@
         fileInput.value='';
         await loadAllPlaylists(); await loadPlaylist();
       }catch(e){ showMessage('Error uploading playlist','error') }
+    }
+
+    async function showPersistentPlaylists(){
+      const container = el('persistentPlaylistsList');
+      if(!container){ showMessage('Saved playlists section not available on this page','error'); return }
+      try{
+        const data = await apiFetch('/api/playlists/load-persistent');
+        const items = data.persistent_playlists || [];
+        if(items.length > 0){
+          container.innerHTML = items.map(p=>`
+            <div class="song-item">
+              <div>
+                <div class="song-title">${p.name}</div>
+                <div class="small">${p.song_count} songs • Created: ${p.created_at||'Unknown'}</div>
+              </div>
+              <div>
+                <button class="btn btn-primary" onclick="loadPersistentPlaylist('${p.name.replace(/'/g,"&#39;")}')">Load</button>
+              </div>
+            </div>
+          `).join('');
+        } else {
+          container.innerHTML = `<div class="empty-state">No saved playlists found</div>`;
+        }
+      }catch(e){ showMessage('Error loading saved playlists','error') }
+    }
+
+    async function loadPersistentPlaylist(name){
+      try{
+        const res = await apiFetch('/api/playlists/load-persistent', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({name})});
+        if(res.success){
+          showMessage(res.message,'success');
+          // Redirect to playlist page to view the loaded playlist
+          window.location.href = '/playlist';
+        } else {
+          showMessage(res.error||'Failed to load playlist','error');
+        }
+      }catch(e){ showMessage('Error loading playlist','error') }
     }
     document.addEventListener('DOMContentLoaded', function(){
       loadPlaylist(); loadAllPlaylists();
