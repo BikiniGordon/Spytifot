@@ -150,12 +150,33 @@
   <script>
     // small helpers
     function el(id){return document.getElementById(id)}
-    function showMessage(msg,type='success'){
+    function showMessage(msg, type='success'){
       let container = el('searchMessage') || document.createElement('div');
-      if(!el('searchMessage')){container.id='searchMessage'; document.body.appendChild(container)}
-      container.innerHTML = '<div style="padding:12px;border-radius:8px;margin:12px 0;font-weight:700;color:'+ (type==='error'?'#721c24':'#155724') +';background:'+(type==='error'?'#f8d7da':'#d4edda')+'">'+msg+'</div>';
+      if(!el('searchMessage')){
+        container.id='searchMessage';
+        document.body.appendChild(container);
+      }
+      container.innerHTML = `
+        <div style="
+          position: fixed;
+          top: 70px;
+          left: 50%;
+          transform: translateX(-50%);
+          z-index: 9999;
+          padding: 12px 20px;
+          border-radius: 8px;
+          margin: 12px 0;
+          font-weight: 700;
+          font-size: 0.95rem;
+          color: ${type==='error'?'#721c24':'#155724'};
+          background: ${type==='error'?'#f8d7da':'#d4edda'};
+          box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+        ">
+          ${msg}
+        </div>`;
       setTimeout(()=>{ if(el('searchMessage')) el('searchMessage').innerHTML=''; },4500);
     }
+
 
     // --- generic fetch helpers used by pages ---
     async function apiFetch(url, opts){
@@ -342,6 +363,43 @@
         }
       }catch(e){ showMessage('Error loading saved playlists','error') }
     }
+    
+    async function uploadPlaylist() {
+      const fileInput = document.getElementById('csvFile');
+      const file = fileInput.files[0];
+      if (!file) {
+        showMessage('Please select a CSV file to upload', 'error');
+        return;
+      }
+      if (!file.name.toLowerCase().endsWith('.csv')) {
+        showMessage('Please select a valid CSV file', 'error');
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append('file', file);
+
+      try {
+        showMessage('Uploading and processing playlist...', 'success');
+        const response = await fetch('/api/upload-playlist', {
+          method: 'POST',
+          body: formData
+        });
+        const data = await response.json();
+
+        if (data.error) {
+          showMessage(data.error, 'error');
+          return;
+        }
+        showMessage(data.message || 'Playlist imported successfully', 'success');
+        fileInput.value = '';
+      } catch (err) {
+        console.error(err);
+        showMessage('Upload failed', 'error');
+      }
+    }
+
+
 
     async function loadPersistentPlaylist(name){
       try{
