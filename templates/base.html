@@ -1,212 +1,347 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}Music Playlist Manager{% endblock %}</title>
-
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
   <style>
-    *{box-sizing:border-box;margin:0;padding:0}
-    html,body{height:100%}
-    body{
-      font-family: 'Poppins', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      /* move gradient to a fixed pseudo-element to avoid restart on long pages */
-      background: none;
-      color:#eee;
-      min-height:100vh;
-      position: relative;
-    }
-    body::before{
-      content: "";
-      position: fixed;
-      inset: 0;
-      z-index: -1;
-      background: linear-gradient(135deg,#0f0f1a 0%, #1b1b2f 100%);
-      background-repeat: no-repeat;
-      background-attachment: fixed;
-    }
+/* ---------- Theme Variables ---------- */
+:root {
+  --primary: #a259ec;
+  --secondary: #4f2d7f;
+  --accent: #b57ee5;
+  --text-main: #f5f5fa;
+  --text-muted: #b7b7c9;
+  --bg-dark: #181826;
+  --bg-gradient: linear-gradient(135deg, #181826 0%, #23234a 100%);
+}
 
-    /* layout */
-    .app {
-      display:flex;
-      min-height:100vh;
-    }
+/* ---------- Global Styles ---------- */
+* { box-sizing: border-box; margin: 0; padding: 0 }
+html, body { height: 100% }
+body {
+  font-family: 'Poppins', sans-serif;
+  color: var(--text-main);
+  background: var(--bg-gradient);
+  font-size: 15px;
+  letter-spacing: 0.02em;
+}
+.app { display: flex; min-height: 100vh; }
 
-    /* SIDEBAR */
-    .sidebar{
-      width:260px;
-      background: linear-gradient(180deg,#0b0b10,#1b1b2f);
-      padding:28px 18px;
-      display:flex;
-      flex-direction:column;
-      gap:14px;
-      border-right:1px solid rgba(255,255,255,0.03);
-      position:fixed;
-      top:0;left:0;bottom:0;
-    }
+/* ---------- Fade-in Animation ---------- */
+.content {
+  margin-left: 260px;
+  padding: 28px;
+  width: 100%;
+  position: relative;
+  z-index: 2;
+  opacity: 0;
+  transform: translateY(24px);
+  animation: fadeInContent 0.8s cubic-bezier(.77,0,.18,1) forwards;
+}
+@keyframes fadeInContent {
+  to { opacity: 1; transform: translateY(0); }
+}
 
-    .brand{
-      display:flex;align-items:center;gap:12px;margin-bottom:6px;
-    }
-    .logo {
-      width:44px;height:44px;border-radius:8px;
-      background:linear-gradient(135deg,#764ba2,#9b59b6);
-      display:flex;align-items:center;justify-content:center;font-weight:700;color:white;
-      font-size:18px;
-    }
-    .brand h1{font-size:18px;color:#f3f3f3;font-weight:700}
+/* ---------- Sidebar ---------- */
+.sidebar-desktop {
+  width: 260px;
+  background: linear-gradient(180deg, #0b0b10, #1b1b2f);
+  padding: 28px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  border-right: 1px solid rgba(255,255,255,0.03);
+  position: fixed;
+  top: 0; left: 0; bottom: 0;
+  z-index: 1000;
+  box-shadow: 2px 0 24px rgba(155,89,182,0.08);
+  animation: fadeInSidebar 0.7s cubic-bezier(.77,0,.18,1);
+}
+@keyframes fadeInSidebar {
+  from { opacity: 0; transform: translateX(-30px);}
+  to { opacity: 1; transform: translateX(0);}
+}
+.brand { display: flex; align-items: center; gap: 12px; margin-bottom: 6px; }
+.logo {
+  width: 44px; height: 44px; border-radius: 8px;
+  background: linear-gradient(135deg, #764ba2, #9b59b6);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; color: white; font-size: 22px;
+  box-shadow: 0 4px 16px rgba(155,89,182,0.25);
+  letter-spacing: 2px;
+  transition: box-shadow 0.3s;
+}
+.logo:hover {
+  box-shadow: 0 8px 32px rgba(155,89,182,0.45);
+  transform: scale(1.08) rotate(-6deg);
+}
+.brand h1 {
+  font-size: 22px;
+  color: #f3f3f3;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-shadow: 0 2px 8px rgba(155,89,182,0.12);
+  transition: color 0.3s;
+}
+.brand h1 span {
+  color: #9b59b6;
+  text-shadow: 0 2px 8px rgba(155,89,182,0.22);
+}
+.nav { margin-top: 12px; display: flex; flex-direction: column; gap: 8px; }
+.nav a {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 12px; border-radius: 8px;
+  color: var(--text-main); text-decoration: none;
+  font-weight: 600; transition: all .18s, box-shadow .3s;
+  box-shadow: 0 2px 8px rgba(155,89,182,0.04);
+  position: relative;
+  overflow: hidden;
+  font-size: 0.97rem;
+  transition: color 0.2s, background 0.2s;
+}
+.nav a .icon { width: 28px; text-align: center; opacity: 0.9; font-size: 1.2em; }
+.nav a:hover {
+  transform: translateX(8px) scale(1.04);
+  background: rgba(155,89,182,0.12);
+  box-shadow: 0 4px 16px rgba(155,89,182,0.18);
+  color: #fff;
+}
+.nav a.active {
+  background: linear-gradient(90deg, rgba(155,89,182,0.18), rgba(118,75,162,0.06));
+  color: #fff; box-shadow: 0 4px 16px rgba(155,89,182,0.22);
+  border-left: 4px solid #9b59b6;
+}
+.spacer { flex: 1 }
 
-    .nav{
-      margin-top:12px;display:flex;flex-direction:column;gap:8px;
-    }
+/* ---------- Mobile Navbar ---------- */
+.navbar-mobile {
+  display: none;
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  height: 60px;
+  background: linear-gradient(180deg, #0b0b10, #1b1b2f);
+  border-top: 1px solid rgba(255,255,255,0.1);
+  flex-direction: row;
+  justify-content: space-around;
+  align-items: center;
+  z-index: 1000;
+  box-shadow: 0 -2px 16px rgba(155,89,182,0.12);
+  animation: fadeInNavbar 0.7s cubic-bezier(.77,0,.18,1);
+}
+@keyframes fadeInNavbar {
+  from { opacity: 0; transform: translateY(30px);}
+  to { opacity: 1; transform: translateY(0);}
+}
+.navbar-mobile a {
+  flex: 1; text-align: center; justify-content: center;
+  display: flex; align-items: center;
+  color: rgba(255,255,255,0.85); font-weight: 600;
+  font-size: 1.1rem; text-decoration: none; transition: all .18s;
+  padding: 8px 0;
+}
+.navbar-mobile a.active {
+  color: #fff; font-weight: 700;
+  background: linear-gradient(90deg, #9b59b6 30%, #764ba2 100%);
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(155,89,182,0.18);
+}
 
-    .nav a{
-      display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:8px;color:rgba(255,255,255,0.85);
-      text-decoration:none;font-weight:600;
-      transition:all .18s;
-    }
+/* ---------- Card & Button ---------- */
+.container-card {
+  background: #23234a;
+  border-radius: 14px;
+  box-shadow: 0 8px 32px rgba(155,89,182,0.18);
+  padding: 22px;
+  margin-bottom: 18px;
+  transition: box-shadow 0.3s, transform 0.3s;
+  opacity: 0;
+  transform: translateY(24px);
+  animation: fadeInCard 0.9s cubic-bezier(.77,0,.18,1) forwards;
+}
+@keyframes fadeInCard {
+  to { opacity: 1; transform: translateY(0);}
+}
+.btn {
+  padding: 10px 18px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.98rem;
+  letter-spacing: 0.04em;
+  background: linear-gradient(90deg, var(--primary), var(--secondary));
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(155,89,182,0.12);
+  transition: background 0.3s, box-shadow 0.3s, transform 0.2s;
+}
+.btn:hover {
+  background: linear-gradient(90deg, var(--accent), var(--primary));
+  box-shadow: 0 6px 24px rgba(155,89,182,0.22);
+  transform: scale(1.07) translateY(-2px);
+}
+.btn-success { background: #28a745; color: white }
+.btn-warning { background: #ffc107; color: #111 }
+.btn-danger { background: #e74c3c; color: white }
+.small {
+  font-size: 0.92rem;
+  color: var(--text-muted);
+  opacity: 0.85;
+}
 
-    .nav a .icon{width:28px;text-align:center;opacity:0.9}
-    .nav a:hover{transform:translateX(6px);background:rgba(155,89,182,0.08)}
-    .nav a.active{background:linear-gradient(90deg, rgba(155,89,182,0.18), rgba(118,75,162,0.06));color:#fff;box-shadow:inset 0 0 0 1px rgba(155,89,182,0.06)}
+/* ---------- Song Item ---------- */
+.song-item {
+  background: rgba(255,255,255,0.04);
+  padding: 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.06);
+  margin-bottom: 12px;
+  display: flex; align-items: center; gap: 14px;
+  box-shadow: 0 2px 8px rgba(155,89,182,0.08);
+  transition: box-shadow 0.3s, transform 0.2s;
+  opacity: 0;
+  transform: translateY(16px);
+  animation: fadeInSong 0.7s cubic-bezier(.77,0,.18,1) forwards;
+}
+@keyframes fadeInSong {
+  to { opacity: 1; transform: translateY(0);}
+}
+.song-item > div:first-child {
+  display: flex; flex-direction: column; gap: 4px;
+  flex: 1 1 auto; text-align: left
+}
+.song-item > div:last-child { margin-left: auto; flex: 0 0 auto }
+.song-title {
+  font-weight: 600;
+  font-size: 1.02rem;
+  letter-spacing: 0.04em;
+  color: #fff;
+  text-shadow: 0 2px 8px rgba(155,89,182,0.12);
+}
+.empty-state {
+  text-align: center;
+  padding: 20px;
+  color: var(--text-muted);
+  font-size: 1rem;
+  letter-spacing: 0.04em;
+  opacity: 0.85;
+}
 
-    .spacer{flex:1}
+/* ---------- Headings ---------- */
+h1, h2, h3 {
+  font-weight: 700;
+  font-family: 'Poppins', sans-serif;
+  margin-bottom: 10px;
+  font-size: 1.35rem;
+  background: linear-gradient(90deg, #ff7eb3 0%, #a259ec 60%, #4f2d7f 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 2px 16px rgba(162,89,236,0.25), 0 1px 0 #fff;
+  border-bottom: 2px solid #a259ec;
+  display: inline-block;
+  padding-bottom: 4px;
+  animation: glowTitle 2.2s infinite alternate;
+}
+@keyframes glowTitle {
+  from { text-shadow: 0 2px 16px rgba(162,89,236,0.25), 0 1px 0 #fff; }
+  to   { text-shadow: 0 2px 24px #ff7eb3, 0 1px 0 #fff; }
+}
+h2 { font-size: 1.18rem; }
+h3 { font-size: 1.05rem; }
 
-    /* content area */
-    .content {
-      margin-left:260px;
-      padding:28px;
-      width:100%;
-    }
-
-    .container-card{
-      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
-      padding:22px;border-radius:12px;border:1px solid rgba(255,255,255,0.03);
-      color:#f5f5f5;box-shadow:0 8px 20px rgba(0,0,0,0.4);
-    }
-
-    h2{color:#fff;margin-bottom:12px}
-    .search-input{width:100%;padding:12px 14px;border-radius:10px;border:1px solid rgba(255,255,255,0.06);background:rgba(255,255,255,0.02);color:#fff}
-    .btn{padding:10px 12px;border-radius:10px;border:none;cursor:pointer;font-weight:700}
-    .btn-primary{background:linear-gradient(90deg,#9b59b6,#764ba2);color:white}
-    .btn-success{background:#28a745;color:white}
-    .btn-warning{background:#ffc107;color:#111}
-    .btn-danger{background:#e74c3c;color:white}
-  .small{font-size:0.9rem}
-
-  .song-item{background:rgba(255,255,255,0.02);padding:12px;border-radius:8px;border:1px solid rgba(255,255,255,0.03);margin-bottom:10px;display:flex;align-items:center;gap:12px}
-  .song-item > div:first-child{display:flex;flex-direction:column;gap:4px;flex:1 1 auto;text-align:left}
-  .song-item > div:last-child{margin-left:auto;flex:0 0 auto}
-  .song-title{font-weight:700;text-align:left}
-    .source-badge{padding:4px 8px;border-radius:999px;font-size:0.75rem;background:rgba(0,0,0,0.25)}
-    .source-badge.user-added{background:#28a745;color:white}
-    .empty-state{text-align:center;padding:26px;color:rgba(255,255,255,0.55)}
-
-    /* responsive */
-    @media (max-width:900px){
-      .sidebar{position:relative;width:100%;display:flex;flex-direction:row;overflow:auto;height:auto}
-      .content{margin-left:0;padding:18px}
-    }
+/* ---------- Responsive ---------- */
+@media (max-width:900px) {
+  .sidebar-desktop { display: none; }
+  .navbar-mobile { display: flex; }
+  .content { margin-left: 0; margin-bottom: 60px; padding: 18px; }
+}
   </style>
 
   {% block head_extra %}{% endblock %}
 </head>
 <body>
   <div class="app">
-    <aside class="sidebar">
+    <!-- desktop sidebar -->
+    <aside class="sidebar-desktop">
       <div class="brand">
         <div class="logo">S</div>
         <div>
-          <h1>SPY<span style="color:#9b59b6">Tifot</span></h1>
+          <h1>SPY<span>tifot</span></h1>
           <div class="small" style="color:rgba(255,255,255,0.6)">Playlist Manager</div>
         </div>
       </div>
-
       <nav class="nav" aria-label="Main">
-        <a href="{{ url_for('search_page') }}" class="{% if active == 'search' %}active{% endif %}"><span class="icon">🔍</span> Search</a>
-        <a href="{{ url_for('playlist_page') }}" class="{% if active == 'playlist' %}active{% endif %}"><span class="icon">🎵</span> Playlist</a>
-        <a href="{{ url_for('library_page') }}" class="{% if active == 'library' %}active{% endif %}"><span class="icon">📚</span> Library</a>
+        <a href="{{ url_for('search_page') }}" class="{% if active == 'search' %}active{% endif %}">
+          <span class="icon">🔍</span> Search
+        </a>
+        <a href="{{ url_for('playlist_page') }}" class="{% if active == 'playlist' %}active{% endif %}">
+          <span class="icon">🎵</span> Playlist
+        </a>
+        <a href="{{ url_for('library_page') }}" class="{% if active == 'library' %}active{% endif %}">
+          <span class="icon">📚</span> Library
+        </a>
       </nav>
-
       <div class="spacer"></div>
-
       <div style="font-size:0.85rem;color:rgba(255,255,255,0.6);">
         <div>Built with ❤️</div>
-        <div style="margin-top:8px;font-size:0.8rem">Local dev</div>
+        <div style="margin-top:8px;font-size:0.8rem">4 Tua Zabb</div>
       </div>
     </aside>
 
+    <!-- mobile navbar -->
+    <nav class="navbar-mobile">
+      <a href="{{ url_for('search_page') }}" class="{% if active == 'search' %}active{% endif %}">🔍</a>
+      <a href="{{ url_for('playlist_page') }}" class="{% if active == 'playlist' %}active{% endif %}">🎵</a>
+      <a href="{{ url_for('library_page') }}" class="{% if active == 'library' %}active{% endif %}">📚</a>
+    </nav>
+
     <main class="content">
-      {% block content %}
-      <!-- default fallback content -->
-      <div class="container-card"><h2>Welcome</h2><p class="small">Select Search / Playlist / Library from the left sidebar.</p></div>
-      {% endblock %}
+      {% block content %}{% endblock %}
     </main>
   </div>
 
-  <!-- Shared scripts: these contain the same JS functions you had in index.html.
-       They check whether elements exist before operating, so you can reuse across pages. -->
   <script>
-    // small helpers
-    function el(id){return document.getElementById(id)}
-    function showMessage(msg, type='success'){
-      let container = el('searchMessage') || document.createElement('div');
-      if(!el('searchMessage')){
-        container.id='searchMessage';
-        document.body.appendChild(container);
+    function el(id) { return document.getElementById(id) }
+    function showMessage(msg, type='success') {
+      let c = el('searchMessage') || document.createElement('div');
+      if (!el('searchMessage')) {
+        c.id = 'searchMessage';
+        document.body.appendChild(c)
       }
-      container.innerHTML = `
-        <div style="
-          position: fixed;
-          top: 70px;
-          left: 50%;
-          transform: translateX(-50%);
-          z-index: 9999;
-          padding: 12px 20px;
-          border-radius: 8px;
-          margin: 12px 0;
-          font-weight: 700;
-          font-size: 0.95rem;
-          color: ${type==='error'?'#721c24':'#155724'};
-          background: ${type==='error'?'#f8d7da':'#d4edda'};
-          box-shadow: 0 4px 12px rgba(0,0,0,0.25);
-        ">
-          ${msg}
-        </div>`;
-      setTimeout(()=>{ if(el('searchMessage')) el('searchMessage').innerHTML=''; },4500);
+      c.innerHTML = `<div style="position: fixed; top: 70px; left: 50%; transform: translateX(-50%); z-index: 9999; padding: 12px 20px; border-radius: 8px; margin: 12px 0; font-weight: 700; font-size: 0.95rem; color: ${type==='error'?'#721c24':'#155724'}; background: ${type==='error'?'#f8d7da':'#d4edda'}; box-shadow: 0 4px 12px rgba(0,0,0,0.25);">${msg}</div>`;
+      setTimeout(() => { if (el('searchMessage')) el('searchMessage').innerHTML = ''; }, 4500)
     }
-
-
-    // --- generic fetch helpers used by pages ---
-    async function apiFetch(url, opts){
-      try{
+    async function apiFetch(url, opts) {
+      try {
         const res = await fetch(url, opts);
-        const json = await res.json();
-        return json;
-      } catch(e){
-        console.error('apiFetch error',e);
-        throw e;
+        return await res.json()
+      } catch (e) {
+        console.error(e); throw e
       }
     }
-    async function searchSongs(){
+
+    // Search
+    async function searchSongs() {
       const input = el('searchInput');
-      if(!input){ return }
+      if (!input) return
       const query = input.value.trim();
-      if(!query){ showMessage('Please enter a search term','error'); return }
+      if (!query) { showMessage('Please enter a search term', 'error'); return }
       const sr = el('searchResults');
-      if(sr) sr.innerHTML = '<div class="empty-state">Loading...</div>';
-      try{
+      if (sr) sr.innerHTML = '<div class="empty-state">Loading...</div>';
+      try {
         const data = await apiFetch(`/api/search?q=${encodeURIComponent(query)}`);
-        if(data.error){ if(sr) sr.innerHTML = `<div class="empty-state">${data.error}</div>`; showMessage(data.error,'error'); return }
-        if(sr){
-          if(!data.songs || data.songs.length===0){
+        if (data.error) {
+          if (sr) sr.innerHTML = `<div class="empty-state">${data.error}</div>`;
+          showMessage(data.error, 'error'); return
+        }
+        if (sr) {
+          if (!data.songs || data.songs.length === 0) {
             sr.innerHTML = `<div class="empty-state"><h3>No Results</h3><p>Try another search</p></div>`;
-            showMessage(`Found 0 songs for "${data.query}"`,'error');
-            return;
+            showMessage(`Found 0 songs for "${data.query}"`, 'error'); return;
           }
-          sr.innerHTML = data.songs.map(song=>`
-            <div class="song-item" data-id="${song.id}">
+          sr.innerHTML = data.songs.map(song =>
+            `<div class="song-item" data-id="${song.id}">
               <div>
                 <div class="song-title">${song.artist} - ${song.song}</div>
                 <div class="small">Key: ${song.key} • BPM: ${song.bpm} • ID: ${song.id}</div>
@@ -214,46 +349,62 @@
               <div>
                 <button class="btn btn-primary" onclick="addToPlaylist(${song.id})">+ Add</button>
               </div>
-            </div>
-          `).join('');
-          showMessage(`Found ${data.total} songs for "${data.query}"`,'success');
+            </div>`
+          ).join('');
+          showMessage(`Found ${data.total} songs for "${data.query}"`, 'success');
         }
-      } catch(e){ if(sr) sr.innerHTML = `<div class="empty-state">Failed to search</div>`; showMessage('Error searching songs','error') }
+      } catch (e) {
+        if (sr) sr.innerHTML = `<div class="empty-state">Failed to search</div>`;
+        showMessage('Error searching songs', 'error')
+      }
     }
 
-    async function addToPlaylist(songId){
-      try{
-        const data = await apiFetch('/api/playlist/add', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({song_id:songId})});
-        if(data.success){ showMessage(data.message,'success'); await loadPlaylist(); }
-        else showMessage(data.error||'Add failed','error');
-      }catch(e){ showMessage('Error adding song to playlist','error') }
+    // Playlist functions
+    async function addToPlaylist(songId) {
+      try {
+        const data = await apiFetch('/api/playlist/add', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ song_id: songId })
+        });
+        if (data.success) {
+          showMessage(data.message, 'success');
+          await loadPlaylist();
+        } else showMessage(data.error || 'Add failed', 'error')
+      } catch (e) { showMessage('Error adding song to playlist', 'error') }
     }
 
-    async function removeFromPlaylist(songId){
-      try{
-        const data = await apiFetch('/api/playlist/remove', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({song_id:songId})});
-        if(data.success){ showMessage(data.message,'success'); await loadPlaylist(); }
-        else showMessage(data.error||'Remove failed','error');
-      }catch(e){ showMessage('Error removing song','error') }
+    async function removeFromPlaylist(songId) {
+      try {
+        const data = await apiFetch('/api/playlist/remove', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ song_id: songId })
+        });
+        if (data.success) {
+          showMessage(data.message, 'success');
+          await loadPlaylist();
+        } else showMessage(data.error || 'Remove failed', 'error')
+      } catch (e) { showMessage('Error removing song', 'error') }
     }
 
-    async function loadPlaylist(){
-      // if playlist element not on this page, skip
+    // Load playlist
+    async function loadPlaylist() {
       const container = el('playlist');
       const nameEl = el('currentPlaylistName');
-      if(!container && !nameEl) return;
-      try{
+      if (!container && !nameEl) return;
+      try {
         const data = await apiFetch('/api/playlist');
         const playlist = data.playlist || [];
-        if(nameEl) nameEl.textContent = data.current_playlist || 'Main Playlist';
-        if(!container) return;
-        if(playlist.length===0){
+        if (nameEl) nameEl.textContent = data.current_playlist || 'Main Playlist';
+        if (!container) return;
+        if (playlist.length === 0) {
           container.innerHTML = `<div class="empty-state"><h3>Empty Playlist</h3><p>Add songs from Search</p></div>`;
-          if(el('playlistCount')) el('playlistCount').textContent = 0;
+          if (el('playlistCount')) el('playlistCount').textContent = 0;
           return;
         }
-        container.innerHTML = playlist.map((s,i)=>`
-          <div class="song-item">
+        container.innerHTML = playlist.map((s, i) =>
+          `<div class="song-item">
             <div>
               <div class="song-title">${i+1}. ${s.artist} - ${s.song}</div>
               <div class="small">Key: ${s.key} • BPM: ${s.bpm}</div>
@@ -261,162 +412,144 @@
             <div>
               <button class="btn btn-danger" onclick="removeFromPlaylist(${s.id})">Remove</button>
             </div>
-          </div>
-        `).join('');
-        if(el('playlistCount')) el('playlistCount').textContent = playlist.length;
-      }catch(e){ showMessage('Error loading playlist','error') }
+          </div>`
+        ).join('');
+        if (el('playlistCount')) el('playlistCount').textContent = playlist.length;
+      } catch (e) { showMessage('Error loading playlist', 'error') }
     }
 
-    async function optimizePlaylist(){
-      try{
-        const simSel = document.getElementById('similaritySelect');
-        const normChk = document.getElementById('normalizeToggle');
-        const payload = {
-          similarity: simSel ? simSel.value : 'euclidean',
-          normalize: normChk ? !!normChk.checked : false
-        };
-        const res = await apiFetch('/api/playlist/optimize', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)});
-        if(res.success){ showMessage(res.message,'success'); await loadPlaylist(); } else showMessage(res.error||'Optimize failed','error');
-      }catch(e){ showMessage('Error optimizing playlist','error') }
+    // Upload CSV
+    async function uploadPlaylist() {
+      const fileInput = el('csvFile');
+      if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
+        showMessage('Please select a CSV file', 'error'); return;
+      }
+      const f = fileInput.files[0];
+      if (!f.name.toLowerCase().endsWith('.csv')) {
+        showMessage('Please choose a CSV file', 'error'); return;
+      }
+      const fd = new FormData(); fd.append('file', f);
+      try {
+        showMessage('Uploading playlist...', 'success');
+        const resp = await fetch('/api/upload-playlist', { method: 'POST', body: fd });
+        const data = await resp.json();
+        if (data.error) { showMessage(data.error, 'error'); return; }
+        showMessage(data.message || 'Playlist imported successfully', 'success');
+        fileInput.value = '';
+        await loadAllPlaylists(); await loadPlaylist();
+      } catch (e) { showMessage('Error uploading playlist', 'error') }
     }
 
-    async function getRecommendations(){
-      // show recommendations if element exists
+    // Get Recommendations
+    async function getRecommendations() {
       const recContainer = el('recommendations');
-      if(!recContainer){ showMessage('Recommendations not available on this page','error'); return }
-      try{
+      if (!recContainer) { showMessage('Recommendations not available', 'error'); return; }
+      try {
         const res = await apiFetch('/api/recommendations');
-        if(res.error){ showMessage(res.error,'error'); recContainer.innerHTML = `<div class="empty-state">${res.error}</div>`; return }
-        recContainer.innerHTML = (res.recommendations||[]).map(r=>`
-          <div class="song-item">
+        if (res.error) {
+          showMessage(res.error, 'error');
+          recContainer.innerHTML = `<div class="empty-state">${res.error}</div>`;
+          return;
+        }
+        recContainer.innerHTML = (res.recommendations || []).map(r =>
+          `<div class="song-item">
             <div>
               <div class="song-title">${r.artist} - ${r.song}</div>
               <div class="small">Key: ${r.key} • BPM: ${r.bpm}</div>
             </div>
             <div><button class="btn btn-primary" onclick="addToPlaylist(${r.id})">+ Add</button></div>
-          </div>
-        `).join('');
-        showMessage(`Found ${res.total} recommendations`,'success');
-      }catch(e){ showMessage('Error getting recommendations','error') }
+          </div>`
+        ).join('');
+        showMessage(`Found ${res.total} recommendations`, 'success');
+      } catch (e) { showMessage('Error getting recommendations', 'error') }
     }
 
-    async function loadAllPlaylists(){
-      const selector = el('playlistSelector');
-      if(!selector) return;
-      try{
+    // Playlist selector
+    async function loadAllPlaylists() {
+      const selector = el('playlistSelector'); if (!selector) return;
+      try {
         const res = await apiFetch('/api/playlists');
         const playlists = res.playlists || {};
         const current = res.current_playlist || 'Main Playlist';
         selector.innerHTML = '';
-        Object.keys(playlists).forEach(name=>{
-          const opt = document.createElement('option'); opt.value=name; opt.textContent=name;
-          if(name===current) opt.selected=true; selector.appendChild(opt);
+        Object.keys(playlists).forEach(name => {
+          const opt = document.createElement('option');
+          opt.value = name; opt.textContent = name;
+          if (name === current) opt.selected = true;
+          selector.appendChild(opt);
         });
-      }catch(e){ console.error(e) }
+      } catch (e) { console.error(e) }
     }
-
-    async function switchPlaylist(){
-      const sel = el('playlistSelector'); if(!sel) return;
-      try{
-        const res = await apiFetch('/api/playlists/switch',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:sel.value})});
-        if(res.success){ showMessage(res.message,'success'); await loadPlaylist(); await loadAllPlaylists(); } else showMessage(res.error||'Switch failed','error');
-      }catch(e){ showMessage('Error switching playlist','error') }
-    }
-
-    async function uploadPlaylist(){
-      const fileInput = el('csvFile');
-      if(!fileInput || !fileInput.files || fileInput.files.length===0){ showMessage('Please select a CSV file','error'); return }
-      const f = fileInput.files[0];
-      if(!f.name.toLowerCase().endsWith('.csv')){ showMessage('Please choose a CSV file','error'); return }
-      const fd = new FormData(); fd.append('file', f);
-      try{
-        showMessage('Uploading...','success');
-        const resp = await fetch('/api/upload-playlist', { method:'POST', body: fd });
-        const data = await resp.json();
-        if(data.error){ showMessage(data.error,'error'); return }
-        showMessage(data.message,'success');
-        fileInput.value='';
-        await loadAllPlaylists(); await loadPlaylist();
-      }catch(e){ showMessage('Error uploading playlist','error') }
-    }
-
-    async function showPersistentPlaylists(){
-      const container = el('persistentPlaylistsList');
-      if(!container){ showMessage('Saved playlists section not available on this page','error'); return }
-      try{
-        const data = await apiFetch('/api/playlists/load-persistent');
-        const items = data.persistent_playlists || [];
-        if(items.length > 0){
-          container.innerHTML = items.map(p=>`
-            <div class="song-item">
-              <div>
-                <div class="song-title">${p.name}</div>
-                <div class="small">${p.song_count} songs • Created: ${p.created_at||'Unknown'}</div>
-              </div>
-              <div>
-                <button class="btn btn-primary" onclick="loadPersistentPlaylist('${p.name.replace(/'/g,"&#39;")}')">Load</button>
-              </div>
-            </div>
-          `).join('');
-        } else {
-          container.innerHTML = `<div class="empty-state">No saved playlists found</div>`;
-        }
-      }catch(e){ showMessage('Error loading saved playlists','error') }
-    }
-    
-    async function uploadPlaylist() {
-      const fileInput = document.getElementById('csvFile');
-      const file = fileInput.files[0];
-      if (!file) {
-        showMessage('Please select a CSV file to upload', 'error');
-        return;
-      }
-      if (!file.name.toLowerCase().endsWith('.csv')) {
-        showMessage('Please select a valid CSV file', 'error');
-        return;
-      }
-
-      const formData = new FormData();
-      formData.append('file', file);
-
+    async function switchPlaylist() {
+      const sel = el('playlistSelector'); if (!sel) return;
       try {
-        showMessage('Uploading and processing playlist...', 'success');
-        const response = await fetch('/api/upload-playlist', {
+        const res = await apiFetch('/api/playlists/switch', {
           method: 'POST',
-          body: formData
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: sel.value })
         });
-        const data = await response.json();
+        if (res.success) {
+          showMessage(res.message, 'success');
+          await loadPlaylist(); await loadAllPlaylists();
+        } else showMessage(res.error || 'Switch failed', 'error')
+      } catch (e) { showMessage('Error switching playlist', 'error') }
+    }
 
-        if (data.error) {
-          showMessage(data.error, 'error');
+    async function showPersistentPlaylists() {
+      const listDiv = document.getElementById('persistentPlaylistsList');
+      if (!listDiv) return;
+      listDiv.innerHTML = '<div class="empty-state">Loading...</div>';
+      try {
+        const res = await apiFetch('/api/playlists');
+        if (res.error) {
+          listDiv.innerHTML = `<div class="empty-state">${res.error}</div>`;
+          showMessage(res.error, 'error');
           return;
         }
-        showMessage(data.message || 'Playlist imported successfully', 'success');
-        fileInput.value = '';
-      } catch (err) {
-        console.error(err);
-        showMessage('Upload failed', 'error');
+        const playlists = res.playlists || {};
+        if (Object.keys(playlists).length === 0) {
+          listDiv.innerHTML = `<div class="empty-state">No saved playlists found.</div>`;
+          return;
+        }
+        listDiv.innerHTML = Object.keys(playlists).map(name =>
+          `<div class="song-item">
+            <div>
+              <div class="song-title">${name}</div>
+              <div class="small">${playlists[name].length} songs</div>
+            </div>
+            <div>
+              <button class="btn btn-primary" onclick="switchToPersistentPlaylist('${name}')">View</button>
+            </div>
+          </div>`
+        ).join('');
+      } catch (e) {
+        listDiv.innerHTML = `<div class="empty-state">Error loading playlists</div>`;
+        showMessage('Error loading playlists', 'error');
       }
     }
 
-
-
-    async function loadPersistentPlaylist(name){
-      try{
-        const res = await apiFetch('/api/playlists/load-persistent', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({name})});
-        if(res.success){
-          showMessage(res.message,'success');
-          // Redirect to playlist page to view the loaded playlist
-          window.location.href = '/playlist';
+    async function switchToPersistentPlaylist(name) {
+      try {
+        const res = await apiFetch('/api/playlists/switch', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name })
+        });
+        if (res.success) {
+          showMessage(res.message, 'success');
+          window.location.href = "{{ url_for('playlist_page') }}";
         } else {
-          showMessage(res.error||'Failed to load playlist','error');
+          showMessage(res.error || 'Switch failed', 'error');
         }
-      }catch(e){ showMessage('Error loading playlist','error') }
+      } catch (e) {
+        showMessage('Error switching playlist', 'error');
+      }
     }
-    document.addEventListener('DOMContentLoaded', function(){
+
+    document.addEventListener('DOMContentLoaded', function () {
       loadPlaylist(); loadAllPlaylists();
       const si = el('searchInput');
-      if(si) si.addEventListener('keypress', (e)=>{ if(e.key==='Enter') searchSongs() });
+      if (si) si.addEventListener('keypress', (e) => { if (e.key === 'Enter') searchSongs() })
     });
   </script>
 

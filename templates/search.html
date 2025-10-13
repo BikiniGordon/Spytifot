@@ -137,25 +137,5 @@
     setTimeout(() => toast.remove(), 3500);
   }
 
-  // override addToPlaylist
-  async function addToPlaylist(songId){
-    try{
-      const data = await fetch('/api/playlist/add', {
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({song_id:songId})
-      }).then(res => res.json());
-
-      if(data.success){
-        showToast('✅ เพิ่มเพลงสำเร็จ!');
-        showMessage(data.message,'success');
-        await loadPlaylist();
-      } else {
-        showMessage(data.error||'Add failed','error');
-      }
-    }catch(e){
-      showMessage('Error adding song to playlist','error');
-    }
-  }
 </script>
 {% endblock %}
