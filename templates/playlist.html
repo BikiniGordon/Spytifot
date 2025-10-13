@@ -82,7 +82,6 @@
 
 
 <script>
-  // ✅ Toast Notification
   function showToast(message, type='success'){
     const toast=document.createElement('div');
     toast.className='message-toast';
@@ -94,7 +93,6 @@
     setTimeout(()=>toast.remove(),3500);
   }
 
-  // ✅ Confirm Modal
   function customConfirm(title, message){
     return new Promise((resolve)=>{
       const modal=document.getElementById('confirmModal');
@@ -115,7 +113,6 @@
       document.getElementById('confirmOk').onclick=()=>{cleanup();resolve(true);};
     });
   }
-  // ✅ Custom Input Modal (ใช้แทน prompt)
 function customPrompt(title, placeholder="") {
   return new Promise((resolve) => {
     const modal = document.getElementById('inputModal');
@@ -145,7 +142,6 @@ function customPrompt(title, placeholder="") {
   });
 }
 
-  // ✅ Clear All
   async function clearPlaylistWithPopup(){
     const confirmed = await customConfirm('Clear Playlist', 'Are you sure you want to clear all songs?');
     if(!confirmed) return;
@@ -159,7 +155,6 @@ function customPrompt(title, placeholder="") {
     }
   }
 
-  // ✅ Delete Playlist
   async function deletePlaylistWithPopup(){
     const sel=document.getElementById('playlistSelector');
     if(!sel) return;
@@ -180,7 +175,6 @@ function customPrompt(title, placeholder="") {
       showToast(j.error||'Delete failed','error');
     }
   }
-// ✅ New Playlist popup
 async function createPlaylistWithPopup() {
   const name = await customPrompt('New Playlist', 'Enter playlist name');
   if (!name) return;
@@ -199,7 +193,6 @@ async function createPlaylistWithPopup() {
   }
 }
 
-// ✅ Rename Playlist popup
 async function renamePlaylistWithPopup() {
   const sel = document.getElementById('playlistSelector');
   if (!sel) return;
@@ -220,7 +213,6 @@ async function renamePlaylistWithPopup() {
   }
 }
 
-  // ✅ Optimize Flow
   async function optimizePlaylist() {
     const sim = document.getElementById('similaritySelect').value;
     const normalize = document.getElementById('normalizeToggle').checked;
@@ -241,23 +233,7 @@ async function renamePlaylistWithPopup() {
       showToast('Error optimizing playlist', 'error');
     }
   }
-
-//   
-//   async function getRecommendations() {
-//     try {
-//       const res = await fetch('/api/recommendations', { method:'POST' });
-//       const data = await res.json();
-//       if (data.success) {
-//         showToast('🎶 Recommendations ready!');
-//         if (data.html) document.getElementById('recommendations').innerHTML = data.html;
-//       } else {
-//         showToast(data.error || 'Failed to get recommendations', 'error');
-//       }
-//     } catch {
-//       showToast('Error getting recommendations', 'error');
-//     }
-//   }
-// </script>
+</script>
 
 <style>
   .message-toast{
