@@ -31,8 +31,8 @@
           <option value="cosine">Cosine</option>
           <option value="weighted_cosine">Weighted Cosine</option>
         </select>
-        <label for="normalizeToggle" class="small" style="margin-left:12px;opacity:0.8">Normalize</label>
-        <input type="checkbox" id="normalizeToggle" />
+        <label for="standardizeToggle" class="small" style="margin-left:12px;opacity:0.8">Standardize</label>
+        <input type="checkbox" id="standardizeToggle" />
       </div>
       <div style="display:flex;gap:12px;align-items:center;">
         <button class="btn btn-warning" onclick="optimizePlaylist()">Optimize Flow</button>
@@ -213,12 +213,12 @@ async function renamePlaylistWithPopup() {
 
   async function optimizePlaylist() {
     const sim = document.getElementById('similaritySelect').value;
-    const normalize = document.getElementById('normalizeToggle').checked;
+    const standardize = document.getElementById('standardizeToggle').checked;
     try {
       const res = await fetch('/api/playlist/optimize', {
         method: 'POST',
         headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({ similarity: sim, normalize })
+        body: JSON.stringify({ similarity: sim, standardize })
       });
       const data = await res.json();
       if (data.success) {

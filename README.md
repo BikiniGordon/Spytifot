@@ -8,7 +8,7 @@ This repository implements a small web app that demonstrates how linear algebra 
 Key ideas and algorithms
 ------------------------
 - Represent each song as a numeric feature vector (BPM × weight, Key scalar).
-- Optionally standardize/normalize feature vectors to balance scales.
+- Optionally standardize feature vectors to balance scales.
 - Compute pairwise similarity between songs (Euclidean-derived similarity, Cosine similarity, and weighted variants).
 - Build a similarity matrix and use a greedy path algorithm to reorder the playlist maximizing local similarity (smooth transitions).
 - Use linear algebra primitives (vector differences, norms, dot-products, matrix construction) for all core calculations.
@@ -46,7 +46,7 @@ Installation
 Usage
 -----
 - Search songs and add them to your session playlist.
-- Use "Optimize Flow" to reorder songs using Euclidean or Cosine similarity (normalization optional).
+- Use "Optimize Flow" to reorder songs using Euclidean or Cosine similarity (standardization optional).
 
 License & attribution
 ---------------------

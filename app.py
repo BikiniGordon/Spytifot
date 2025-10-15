@@ -462,7 +462,7 @@ def optimize_playlist():
         except Exception:
             opts = {}
         similarity_method = opts.get('similarity', 'euclidean')
-        normalize_flag = bool(opts.get('normalize', False))
+        standardize_flag = bool(opts.get('standardize', False))
         # convert session playlist to format expected by music_database_analyzer
         # create a mapping to preserve source information
         playlist_data = []
@@ -488,7 +488,7 @@ def optimize_playlist():
         print(f"DEBUG: Converted playlist_data: {len(playlist_data)} songs")
         print(f"DEBUG: Source mapping: {source_mapping}")
 
-        optimized_playlist, transition_scores = reorder_playlist_for_flow(playlist_data, similarity_method, normalize_flag)
+        optimized_playlist, transition_scores = reorder_playlist_for_flow(playlist_data, similarity_method, standardize_flag)
         
         print(f"DEBUG: After optimization: {len(optimized_playlist)} songs")
 
@@ -520,10 +520,10 @@ def optimize_playlist():
         
         return jsonify({
             'success': True,
-            'message': f'Playlist optimized! Average similarity: {avg_score:.4f} (method: {similarity_method}, normalize: {normalize_flag})',
+            'message': f'Playlist optimized! Average similarity: {avg_score:.4f} (method: {similarity_method}, standardize: {standardize_flag})',
             'avg_similarity': avg_score,
             'similarity_method': similarity_method,
-            'normalize': normalize_flag,
+            'standardize': standardize_flag,
             'playlist': session['playlist']
         })
     
