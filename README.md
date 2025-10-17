@@ -24,6 +24,7 @@ https://docs.google.com/document/d/1WcHNaTo6KHNG88yUWxrCULuwHPuQCGQ8UtItgzzK50Q/
 
 Files & structure
 -----------------
+- `data cleaning/` - Jupyter notebook use for extract and cleaning data.
 - `app.py` — Flask web app and API endpoints for search, playlists, optimization, and persistence.
 - `music_database_analyzer.py` — Core algorithms: feature construction, similarity computation, greedy reorder, recommendations.
 - `duuzu_song_database_cleaned.csv` — Primary dataset (song rows with BPM, Key, Key_Scalar, etc.).
