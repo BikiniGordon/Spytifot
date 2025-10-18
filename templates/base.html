@@ -547,6 +547,38 @@ h3 { font-size: 1.05rem; }
       }
     }
 
+    async function exportCurrentPlaylist() {
+      try {
+        const selector = el('playlistSelector');
+        const currentPlaylistName = selector ? selector.value : 'Main Playlist';
+        
+        window.location.href = `/api/playlists/export/${encodeURIComponent(currentPlaylistName)}`;
+        showMessage('Export started...', 'success');
+      } catch (error) {
+        showMessage('Error exporting playlist: ' + error.message, 'error');
+      }
+    }
+
+    async function optimizePlaylist() {
+      const sim = document.getElementById('similaritySelect') ? document.getElementById('similaritySelect').value : 'euclidean';
+      const standardize = document.getElementById('standardizeToggle') ? document.getElementById('standardizeToggle').checked : false;
+      try {
+        const res = await apiFetch('/api/playlist/optimize', {
+          method: 'POST',
+          headers: {'Content-Type':'application/json'},
+          body: JSON.stringify({ similarity: sim, standardize })
+        });
+        if (res.success) {
+          showMessage('Playlist optimized successfully!', 'success');
+          loadPlaylist();
+        } else {
+          showMessage(res.error || 'Optimization failed', 'error');
+        }
+      } catch (err) {
+        showMessage('Error optimizing playlist', 'error');
+      }
+    }
+
     document.addEventListener('DOMContentLoaded', function () {
       loadPlaylist(); loadAllPlaylists();
       const si = el('searchInput');

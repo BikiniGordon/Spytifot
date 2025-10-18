@@ -1,6 +1,7 @@
-from flask import Flask, render_template, request, jsonify, session, redirect, url_for
+from flask import Flask, render_template, request, jsonify, session, redirect, url_for, send_file
 import pandas as pd
 import json
+import io
 from music_database_analyzer import find_songs_closest_to_playlist_average, reorder_playlist_for_flow, convert_key_to_scalar
 import os
 from werkzeug.utils import secure_filename
@@ -672,18 +673,17 @@ def export_playlist(playlist_name):
     try:
         playlist_df = pd.DataFrame(playlist)
         csv_filename = f"{playlist_name.replace(' ', '_').lower()}_playlist.csv"
-        csv_path = os.path.join('exports', csv_filename)
         
-        # create exports directory if it doesn't exist
-        os.makedirs('exports', exist_ok=True)
+        output = io.BytesIO()
+        playlist_df.to_csv(output, index=False)
+        output.seek(0)
         
-        playlist_df.to_csv(csv_path, index=False)
-        
-        return jsonify({
-            'success': True,
-            'message': f'Exported playlist "{playlist_name}" to {csv_filename}',
-            'filename': csv_filename
-        })
+        return send_file(
+            output,
+            mimetype='text/csv',
+            as_attachment=True,
+            download_name=csv_filename
+        )
     except Exception as e:
         return jsonify({'error': f'Export failed: {str(e)}'})
 
